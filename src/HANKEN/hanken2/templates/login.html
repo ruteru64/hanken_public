@@ -1,0 +1,27 @@
+{% extends "header.html" %}
+{% load static %}
+
+{% block contents %}
+<link rel="stylesheet" href="{% static 'login.css' %}">
+<p class="begin"></p>
+<div class="form-wrapper">
+    <h1>Login</h1>
+    <form action="login-m" method="post" class="login"> {% csrf_token %}
+        <div class="form-item">
+            <label for="email"></label>
+            <input type="email" name="id" required="required" placeholder="Email Address" required></input>
+        </div>
+        <div class="form-item">
+            <label for="password"></label>
+            <input type="password" name="password" required="required" placeholder="Password" required></input>
+        </div>
+            <div class="button-panel">
+            <input type="submit" class="button" title="login" value="login"></input>
+        </div>
+    </form>
+    <div class="form-footer">
+        <p><a href="/register">アカウントを作成</a></p>
+        <p><a href="/">パスワードを忘れたとき</a></p>
+    </div>
+</div>
+{% endblock %}

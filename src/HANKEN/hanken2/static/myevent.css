@@ -1,0 +1,18 @@
+ul.event{
+    list-style: none;
+    width: 50%;
+}
+ul.contemts{
+    list-style: none;
+    border: solid 1px #000000;
+    width: 50%;
+}
+
+a{
+    text-decoration: none;
+}
+
+ul.contemts li{
+    color: #000000;
+    padding: 20px;
+}

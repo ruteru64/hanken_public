@@ -1,0 +1,25 @@
+{% extends "header.html" %} 
+{% load static %}
+
+{% block contents %}
+<link rel="stylesheet" href="{% static 'myevent.css' %}">
+
+<h2 class="begin">
+    マイイベント
+</h2>
+
+<ul class="event">
+    {% for list in eventlist %}
+    <li>
+        <a href="/event?id={{ list.id }}">
+            <ul class="contemts">
+                <li>{{ list.name }}</li>
+                <li>{{ list.place }}</li>
+                <li>{{ list.date }}</li>
+            </ul>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

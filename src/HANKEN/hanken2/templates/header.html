@@ -1,0 +1,60 @@
+{% load static %}
+<html lang="ja">
+    <head>
+        <link rel="shortcut icon" type="image/vnd.microsoft.icon" href= "{% static 'favicon.ico' %}" >
+        <link rel="icon" type="image/vnd.microsoft.icon" href="{% static 'favicon.ico' %}">
+        <link rel="apple-touch-icon" sizes="57x57" href="{% static 'apple-touch-icon-57x57.png' %}">
+        <link rel="apple-touch-icon" sizes="60x60" href="{% static 'apple-touch-icon-60x60.png' %}">
+        <link rel="apple-touch-icon" sizes="72x72" href="{% static 'apple-touch-icon-72x72.png' %}">
+        <link rel="apple-touch-icon" sizes="76x76" href="{% static 'apple-touch-icon-76x76.png' %}">
+        <link rel="apple-touch-icon" sizes="114x114" href="{% static 'apple-touch-icon-114x114.png' %}">
+        <link rel="apple-touch-icon" sizes="120x120" href="{% static 'apple-touch-icon-120x120.png' %}">
+        <link rel="apple-touch-icon" sizes="144x144" href="{% static 'apple-touch-icon-144x144.png' %}">
+        <link rel="apple-touch-icon" sizes="152x152" href="{% static 'apple-touch-icon-152x152.png' %}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon-180x180.png' %}">
+
+        <link rel="stylesheet" href="{% static 'header.css' %}">
+        <link rel="stylesheet" href="{% static 'font.css' %}">
+
+        <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.10.3/babel.min.js"></script>
+
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-3SMLQMXKL7"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-3SMLQMXKL7');
+        </script>
+        <title>HANKEN|{{ name }}</title>
+    </head>
+    <body>
+        <header>
+            <ul>
+                <li class="left p"><a href="/"><img src="{% static 'logo_large.png' %}"></a></li>
+                {% if name != "host" %}
+                    <li class="rights"><a href="/">Home</a></li>
+                {% else %}
+                    <li class="rights"><a href="/homehost">Home</a></li>
+                {% endif %}
+                {% if user == "" %}
+                    <li class="right"><a href="/login">Login</a></li>
+                {% else %}
+                    {% if name != "host" %}
+                        <li class="right"><a href="/mypage">Mypage</a></li>
+                        <li class="right"><a href="/myticket">Myticket</a></li>
+                        <li class="right"><a href="/myevent">Myevent</a></li>
+                    {% endif %}
+                    <li class="right"><a href="/logout">Logout</a></li>
+                    <li class="right"><a href="/myevent">{{ user }}</a></li>
+                {% endif %}
+            </ul>
+        </header>
+        {% block contents %}
+        {% endblock %}
+        <style>
+        </style>
+    </body>
+</html>

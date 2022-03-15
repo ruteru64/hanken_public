@@ -1,0 +1,50 @@
+header{
+    z-index: 10;
+    height: 84px;
+    position: absolute;
+    background-color: #ffffff;
+    width: 100%;
+    z-index: 2;
+    border-bottom: solid 1px #aaaaaa;
+    position: fixed;
+    font-size: large;
+}
+header ul {
+    overflow:hidden;
+    list-style:none;
+    margin: 0 auto;
+    display: flex;
+    z-index: 20;
+}
+header ul li {
+    display: inline-block;
+    padding: 26px 10px 20px 10px;
+}
+header ul li img{
+    width: auto;
+    height: 80px;
+}
+li.left.p {
+    padding: unset;
+}
+header ul li a:visited{
+    color: inherit;
+}
+header ul li a{
+    color: black;
+    text-decoration: none;
+    font-family: "yumin";
+}
+.right{
+    margin-left: 0px;
+}
+.rights{
+    margin-right: 5px;
+    margin-left: auto;
+}
+header.left{
+    margin-right: auto;
+}
+.begin{
+    padding-top: 100px;
+}

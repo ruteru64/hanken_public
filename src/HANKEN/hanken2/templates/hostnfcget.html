@@ -1,0 +1,69 @@
+{% extends "header.html" %}
+
+{% block contents %}
+
+<h2 class="begin">イベントid</h2>
+<p id="eventid">{{ id }}</p>
+<div id="nfc"></div>
+
+<script type="text/babel">
+    const id = "1"//document.getElementById("eventid");
+    const url = "hostnfcget-g?id="+id+"&"+"nfc=";
+    let request = new XMLHttpRequest();
+    let err = ""
+    class App extends React.Component{
+        constructor(props) {
+            super(props);
+            this.state = {search:"",enter:""};
+        }
+        handleChange = (e) =>{
+            this.setState({search:e.target.value})
+        }
+        handleEnter = (e) =>{
+            request.open("GET", url+this.state.search, true)
+            request.onreadystatechange = function() {
+                if (request.readyState == 4 && request.status == 200) {
+                    const j = JSON.parse(decodeURI(request.responseText))
+                    if (j["isnfc"] === 1 && j["isticket"] === 1 && j["wasentry"] === 0){
+                        err = "入場可能"
+                    }else if (j["isticket"] === 0 && j["isnfc"] === 1){
+                        err = "チケットが登録されていません"
+                    }else if (j["wasentry"] === 1){
+                        err = "再入場は禁止です"
+                    }else if (j["isnfc"] === 0){
+                        err = "nfcが登録されていません"
+                    }
+                    else{
+                        err = "予期せぬエラーが発生しました"
+                    }
+                    this.setState({search:"",enter:err})
+                }
+            }.bind(this)
+            request.send("")
+        }
+        render = () => {
+            return (
+                <div>
+                    <input type="text" value={this.state.search} onChange={this.handleChange} />
+                    <button onClick={this.handleEnter}>入場</button>
+                    <h2>{ this.state.enter }</h2>
+                </div>
+            )
+        }
+    };
+    class Render extends React.Component{
+        render = () =>{
+            return (
+                <div>
+                    <App />
+                </div>
+            );
+        }
+    };
+    ReactDOM.hydrate(
+            <Render />,
+            document.getElementById('nfc')
+    );
+</script>
+
+{% endblock %}

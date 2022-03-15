@@ -1,0 +1,74 @@
+{% extends "header.html" %}
+{% load static %}
+
+{% block contents %}
+<link rel="stylesheet" href="{% static 'index.css' %}">
+<div id="search"></div>
+<script type="text/babel">
+    class App extends React.Component{
+        constructor(props) {
+            super(props);
+            this.state = {search:"",contents:[]};
+        }
+        handleChange = (e) =>{
+            this.setState({search:e.target.value})
+        }
+        handleSearch = (e) =>{
+            if (this.state.search === ""){
+                return
+            }
+            const url = '/eventsearch?eventname='
+            let request = new XMLHttpRequest();
+            request.open("GET", url+this.state.search, true)
+            request.onreadystatechange = function() {
+                if (request.readyState == 4 && request.status == 200) {
+                    const j = JSON.parse(decodeURI(request.responseText))
+                    if (j['length'] == 0){
+                        this.setState({contents:[]})
+                    }else{
+                        this.setState({contents:j['eventlist']})
+                    }
+                }
+            }.bind(this)
+            request.send("")
+        }
+        render = () => {
+            const event = this.state.contents.map((number) =>
+                <li>
+                    <a href={ '/event?id='+number.id }>
+                    <ul class="contemts">
+                        <li>イベント名:{ number.name }</li>
+                        <li>開催日　　:{ number.date }</li>
+                        <li>開催場所　:{ number.place }</li>
+                    </ul>
+                    </a>
+                </li>
+            );
+            return (
+                <div class="begin">
+                    <div class="search_container">
+                        <input type="text" value={this.state.search} onChange={this.handleChange} />
+                        <button onClick={this.handleSearch}>検索</button>
+                    </div>
+                    <ul class="event">
+                        { event }
+                    </ul>
+                </div>
+            )
+        }
+    };
+    class Render extends React.Component{
+        render = () =>{
+            return (
+                <div>
+                    <App />
+                </div>
+            );
+        }
+    };
+    ReactDOM.hydrate(
+            <Render />,
+            document.getElementById('search')
+    );
+</script>
+{% endblock %}

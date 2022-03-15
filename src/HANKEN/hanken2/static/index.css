@@ -1,0 +1,43 @@
+ul.event{
+    list-style: none;
+    width: 50%;
+}
+ul.contemts{
+    list-style: none;
+    border: solid 1px #000000;
+}
+
+a{
+    text-decoration: none;
+}
+
+ul.contemts li{
+    color: #000000;
+    padding: 20px;
+}
+
+.search_container{
+    box-sizing: border-box;
+}
+.search_container input[type="text"]{
+    border: 1px solid #999;
+    padding: 3px 5px;
+    border-radius: 20px;
+    height: 2.0em;
+    width: 245px;
+    overflow: hidden;
+}
+.search_container input[type="text"]:focus {
+    outline: 0;
+}
+.search_container button{
+    cursor: pointer;
+    font-family: FontAwesome;
+    font-size: 1.3em;
+    border: none;
+    background: none;
+    color: #3879D9;
+    outline : none;
+    display: inline-block;
+    vertical-align: middle;
+}

@@ -1,0 +1,25 @@
+{% extends "header.html" %} 
+{% load static %}
+
+{% block contents %}
+<link rel="stylesheet" href="{% static 'myevent.css' %}">
+
+<h2 class="begin">
+    イベントリスト
+</h2>
+
+<ul class="event">
+    {% for list in eventlist %}
+    <li>
+        <a href="/hostnfcget?id={{ list.e_event_id }}">
+            <ul class="contemts">
+                <li>{{ list.e_event_name }}</li>
+                <li>{{ list.p_places__p_prefecture }}</li>
+                <li>{{ list.e_start }}</li>
+            </ul>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

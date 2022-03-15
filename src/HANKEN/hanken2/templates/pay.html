@@ -1,0 +1,65 @@
+{% extends "header.html" %}
+
+{% block contents %}
+
+<h2 class="begin">支払い情報の入力</h2>
+
+<script src="https://js.pay.jp/v2/pay.js"></script>
+<style>
+div.payjs-outer {
+  border: thin solid #198fcc;
+}
+</style>
+<div id="v2-demo" class="payjs-outer"></div>
+<button onclick="onSubmit(event)">決済</button>
+<span id="token"></span>
+<script>
+var payjp = Payjp('pk_test_245f7d60b187449c6e6b4ff6')
+var elements = payjp.elements()
+var cardElement = elements.create('card')
+cardElement.mount('#v2-demo')
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function onSubmit(event) {
+    payjp.createToken(cardElement).then(function(r) {
+        if (!(r.error)){
+            const xhr = new XMLHttpRequest();
+            const csrf_token = getCookie("csrftoken");
+            xhr.onload = function (e) {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const res = JSON.parse(decodeURI(xhr.responseText))
+                        if (res.err === "Ok"){
+                            document.querySelector('#token').innerText = "決済完了";
+                        }else{
+                            document.querySelector('#token').innerText = res.err;
+                        }
+                    }
+                }
+            };
+            const get = location.search
+            xhr.open('POST', '/pay-m'+get, true);
+            xhr.setRequestHeader('content-type', 'application/x-www-form-urlencoded;charset=UTF-8');
+            const i = "id=" + r.id;
+            xhr.setRequestHeader("X-CSRFToken", csrf_token);
+            xhr.send(i);
+        }
+        document.querySelector('#token').innerText = r.error ? r.error.message : "送信成功"
+    })
+}
+</script>
+
+{% endblock %}

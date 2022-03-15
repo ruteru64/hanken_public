@@ -1,0 +1,50 @@
+{% extends "header.html" %} 
+{% load static %}
+{% block contents %}
+<link rel="stylesheet" href="{% static 'event.css' %}">
+<p class="begin">
+    <ul class="event">
+        <li><h2>イベント名</h2><p>{{ event.name }}</p></li>
+        <li><h2>イベント開催地</h2><p>{{ event.state }}</p></li>
+        <li><h2>イベント開催日 </h2><p>{{ event.date }}</p></li>
+        <li><h2>イベント開催者 </h2><p>{{ event.host }}</p></li>
+        <li><h2>イベント詳細 </h2><p>{{ event.detail }}</p></li>
+        {% if otherslist.0 == "" %}
+        {% else %}
+        <li>
+            <h4>その他の情報</h4>
+            {% for other in otherslist %}
+                {% if other.o_name == "" %}
+                {% else %}
+                    <table>
+                        <tr>
+                            <th>{{ other.o_name }}</th><td>{{ other.o_detail }}</td>
+                        </tr>
+                    </table>
+                
+                {% endif %}
+            {% endfor %}
+        </li>
+        {% endif %}
+        <li><h2>料金表</h2>
+            <!-- 3/14~3/15にかけて作る予定です -->
+        </li>
+    </ul>
+</p>
+
+{% if name == 'event' %}
+<ul class="contemts">
+    {% for ticket in ticketlist %}
+    <a href="/pay?id={{ ticket.id }}">
+        <li>
+            <ul class="contents">
+                <li>種別:{{ ticket.name }}</li>
+                <li>対象年齢:{{ ticket.people }}</li>
+                <li>価格:{{ ticket.plice }} </li>
+                <li>状態:{{ ticket.status }} </li>
+            </ul>
+        </li>
+    </a>
+    {% endfor %}
+</ul>
+{% endif %} {% endblock %}

@@ -31,15 +31,14 @@ https://hanken.link
 
 ## 使用技術
 
-### Web
-
-python
-Djasngo
-React
-
-### android
-
-Java
+* python
+* Djasngo
+* React
+* Java
+* android
+* SQLite
+* NFC
+* AWS
 
 
 ## ファイル構成

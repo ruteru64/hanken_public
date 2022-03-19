@@ -25,4 +25,6 @@ urlpatterns = [
     path('genticket-m',views.genticket_m,name='genticket-m'),
     path('pay-m',views.pay_m,name='pay-m'),
     path('pay',views.pay,name='pay'),
+    path('terms',views.terms,name='terms'),
+    path('privacy',views.privacy,name='privacy'),
 ]

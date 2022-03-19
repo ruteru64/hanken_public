@@ -11,7 +11,7 @@
 <ul class="event">
     {% for list in ticketlist %}
     <li>
-        <a href="/ticket?id={{ list.id }}">
+        <a href="/event?id={{ list.id }}">
             <ul class="contemts">
                 <li>{{ list.name }}</li>
                 <li>{{ list.place }}</li>

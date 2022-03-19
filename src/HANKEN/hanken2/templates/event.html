@@ -9,42 +9,78 @@
         <li><h2>イベント開催日 </h2><p>{{ event.date }}</p></li>
         <li><h2>イベント開催者 </h2><p>{{ event.host }}</p></li>
         <li><h2>イベント詳細 </h2><p>{{ event.detail }}</p></li>
-        {% if otherslist.0 == "" %}
-        {% else %}
+        {% if otherslist.0 != "" %}
         <li>
             <h4>その他の情報</h4>
             {% for other in otherslist %}
-                {% if other.o_name == "" %}
-                {% else %}
-                    <table>
-                        <tr>
-                            <th>{{ other.o_name }}</th><td>{{ other.o_detail }}</td>
-                        </tr>
-                    </table>
-                
+                {% if other.o_name != "" %}
+                <table>
+                    <tr>
+                        <th>{{ other.o_name }}</th><td>{{ other.o_detail }}</td>
+                    </tr>
+                </table>
                 {% endif %}
             {% endfor %}
         </li>
         {% endif %}
-        <li><h2>料金表</h2>
-            <!-- 3/14~3/15にかけて作る予定です -->
-        </li>
+        <li><h2>料金表</h2></li>
+        <!-- 3/14~3/15にかけて作る予定です -->
+        <table>
+            <tr>
+                <th>&nbsp;</th>
+                {% for th in thlist %}
+                    <th>{{ th }}</th>
+                {% endfor %}
+            </tr>
+            {% for sc in sclist %}
+            <tr>
+                <th>{{ sc.s_name }}</th>
+                {% for charge in sc.cc %}
+                    <td>{{ charge.plice }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
     </ul>
 </p>
+
+{% if event.xyzFlag == 1 %}
+<!--マップ-->
+<div id="view_map" style="height: 350px;width:350px"></div>
+<script type="text/javascript">
+    const places = JSON.parse('{{ place_json|safe }}');
+    //緯度,経度,ズーム
+    var map = L.map('view_map').setView([places.ido, places.kedo], 15);
+    // OpenStreetMap から地図画像を読み込む
+    L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, '
+    }).addTo(map);
+
+    var popup = L.popup();
+    L.marker([places.ido, places.kedo]).addTo(map).on('click', function (e) {
+        popup
+            .setLatLng(e.latlng)
+            .setContent(places.name)
+            .openOn(map);
+    });
+</script>
+{% endif %}
 
 {% if name == 'event' %}
 <ul class="contemts">
     {% for ticket in ticketlist %}
-    <a href="/pay?id={{ ticket.id }}">
-        <li>
+    <li>
+        <a href="/pay?id={{ ticket.id }}">
             <ul class="contents">
                 <li>種別:{{ ticket.name }}</li>
                 <li>対象年齢:{{ ticket.people }}</li>
                 <li>価格:{{ ticket.plice }} </li>
                 <li>状態:{{ ticket.status }} </li>
             </ul>
-        </li>
-    </a>
+        </a>
+    </li>
     {% endfor %}
 </ul>
 {% endif %} {% endblock %}

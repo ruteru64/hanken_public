@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block contents %}
+
 <link rel="stylesheet" href="{% static 'index.css' %}">
 <div id="search"></div>
 <script type="text/babel">
@@ -38,7 +39,7 @@
                     <a href={ '/event?id='+number.id }>
                     <ul class="contemts">
                         <li>イベント名:{ number.name }</li>
-                        <li>開催日　　:{ number.date }</li>
+                        <li>開催日　  :{ number.date }</li>
                         <li>開催場所　:{ number.place }</li>
                     </ul>
                     </a>
@@ -71,4 +72,15 @@
             document.getElementById('search')
     );
 </script>
+人気イベント5選
+{% for event in poplist %}
+<a href="/event?id={{ event.id }}">
+<ul class="contemts">
+    <li>イベント名:{{ event.name }}</li>
+    <li>開催日　  :{{ event.date }}</li>
+    <li>開催場所　:{{ event.place }}</li>
+</ul>
+{% endfor %}
+
+
 {% endblock %}

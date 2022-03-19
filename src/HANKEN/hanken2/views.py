@@ -12,18 +12,64 @@ from .models import A_addresses, E_events, N_nfcs, T_tickets, U_users, P_places,
 # テーブルのスペルミスってた()
 from .models import En_enries as En_entries
 
+import datetime
+from django.utils import timezone
+
+from django.db.models import Q
+
+import hashlib
+
+
+# 人気のイベント
+def popevent():
+    # 受付終了が今日よりあとのを取得
+    # したかったけど日付型が意味不明だったので諦めました
+    # eventids = T_tickets.objects.filter("ti_ticketsinfos__ti_end" == 1111-11-11).values("e_event_id_id")
+    # eventids.extend(T_tickets.objects.filter("ti_ticketsinfos__ti_end" >= datetime.datetime.now().strftime('%Y-%m-%d')).values("e_event_id_id"))
+    # print(eventids)
+    eventids = T_tickets.objects.values("e_event_id_id")
+
+    eventid_dic = {}
+    for eventid in eventids:
+        
+        if eventid['e_event_id_id'] in eventid_dic.keys():
+            eventid_dic[eventid['e_event_id_id']] += 1
+        else:
+            eventid_dic[eventid['e_event_id_id']] = 0
+    
+    eventid_dic2 = sorted(eventid_dic.items(), key=lambda x:x[1], reverse=True)
+    # [(1, 85), (2, 60), (3, 20)]
+    event_list = []
+    number = 5
+    count = len(eventid_dic2)
+    if count < 5:
+        number = count
+
+    for i in range(number):
+        event_dic = {}
+        event_obj = E_events.objects.get(pk = eventid_dic2[i][0])
+        event_dic["id"] = event_obj.e_event_id
+        event_dic["name"] = event_obj.e_event_name
+        event_dic["date"] = event_obj.e_start
+        event_dic["place"] = P_places.objects.get(e_event_id_id = eventid_dic2[i][0]).p_prefecture
+        # event_dic["place"] = placelist[0]["p_prefecture"]
+        event_list.append(event_dic)
+
+    return event_list
+
 # Create your views here.
 def index(request):
+    poplist = popevent()
     id = ''
     try:
         id = request.session['host_id']
-        return render(request, 'index.html', {"user":id,"name":"host"})
+        return render(request, 'index.html', {"user":id,"name":"host","poplist":poplist})
     except:
         try:
             id = request.session['member_id']
         except:
             id = ''
-    return render(request, 'index.html', {"user":id,"name":"Home"})
+    return render(request, 'index.html', {"user":id,"name":"Home","poplist":poplist})
 
 def login(request):
     try:
@@ -35,6 +81,12 @@ def login(request):
             return redirect("/")
         except:
             return render(request, 'login.html', {"user":"","name":"Login"})
+
+def terms(request):
+    return render(request,'terms.html',{})
+
+def privacy(request):
+    return render(request,"privacy.html",{})
 
 def eventsearch(request):
     temp = 0
@@ -69,10 +121,15 @@ def eventsearch(request):
     
     return JsonResponse(prm,safe=False)
 
+def make_hash(password):
+    password = bytes(password, 'utf-8')
+    hashpw = hashlib.sha256(password).hexdigest()
+    return hashpw
+
 def login_m(request):
     if 'id' in request.POST and 'password' in request.POST:
         id = request.POST['id']
-        pw = request.POST['password']
+        pw = make_hash(request.POST['password'])
         ## 
         # TODO:4
         # idでかつpasswordを持つユーザーがいるか確認する
@@ -118,9 +175,17 @@ def getEvent(id):
     dic["host"] = event.e_host_name
     dic["detail"] = event.e_outline
 
+    dic["xyzFlag"] = 1
+    if temp1[0].p_ido == "":
+        dic["xyzFlag"] = 0
+
+
     event = dic
     # event = [{'id':'1','state':'tokyo',"date":'2020',"host":"ruteru","detail":"いろいろやるよ"}]
-    return event
+
+    '''マップ用'''
+    place_dic = {'ido':temp1[0].p_ido, 'kedo':temp1[0].p_kedo, 'name':temp1[0].p_build}
+    return event, place_dic
 
 def status_render(s_null, s_count):
     wariai = s_null / s_count
@@ -142,8 +207,8 @@ def getTicketlist(id):
     # idはイベントID
 
     # 料金中間テーブルでイベントの料金形態が分かる
-    ## 料金中間テーブルから[{料金区分:大人, 座席区分:S席, 料金:1000}, {料金区分:子供, 座席区分:S席, 料金:1000}]を取得
-    plan_list = Ww_charges_ww.objects.filter(e_event_id_id = id).values("cc_id_id", "sc_id_id", "c_charge_id")
+    ## 料金中間テーブルから[{料金中間テーブルID:1, 料金区分:大人, 座席区分:S席, 料金:1000}, {料金中間テーブルID:2, 料金区分:子供, 座席区分:S席, 料金:1000}]を取得
+    plan_list = Ww_charges_ww.objects.filter(e_event_id_id = id).order_by("sc_id_id").values("ww_charge_id", "cc_id_id", "sc_id_id", "c_charge_id")
 
     
 
@@ -154,7 +219,7 @@ def getTicketlist(id):
     ticket = []
     for plan in plan_list:
         temp_dic = {}
-        # plan == {'cc_id_id': 2, 'sc_id_id': 1, 'c_charge_id': 2}
+        # plan == {'ww_charge_id': 1, 'cc_id_id': 2, 'sc_id_id': 1, 'c_charge_id': 2}
         # # イベントの座席数
         for cap in capacity_dic:
             if cap["sc_id_id"] == plan['sc_id_id']:
@@ -179,17 +244,42 @@ def getTicketlist(id):
             temp_dic["status"] = "販売中"
         temp_dic["name"] = Sc_seatclasses.objects.get(pk = plan["sc_id_id"]).sc_name
         if temp_dic["name"] == "":
-            temp_dic["name"] = "座席区分は同じ！(よさげな単語が見つからん)"
+            temp_dic["name"] = "同じよ～ん"
+        
         temp_dic["people"] = Cc_chargeclasses.objects.get(pk = plan["cc_id_id"]).cc_name
         temp_dic["plice"] = C_charges.objects.get(pk = plan["c_charge_id"]).c_charge
 
-        """IDが何のIDだかわからない..."""
-        temp_dic["id"] = 1
+        temp_dic["id"] = plan["ww_charge_id"]
 
         ticket.append(temp_dic)
 
+    '''表用'''
+    # すごい無駄なことしてるかも...
 
-
+    # 料金区分です
+    th_list =[]
+    sc_list = []
+    sc_temp = 0
+    cc_temp = []
+    sc_count = -1
+    for plan in plan_list:
+        if not plan["cc_id_id"] in cc_temp:
+            th_list.append(Cc_chargeclasses.objects.get(pk = plan["cc_id_id"]).cc_name)
+            cc_temp.append(plan["cc_id_id"])
+        # 座席区分IDがなければ追加
+        if plan["sc_id_id"] != sc_temp:
+            cc_list = []
+            sc_count += 1
+            sc_temp = plan["sc_id_id"]
+            sc_dic = {"s_name":Sc_seatclasses.objects.get(pk = plan["sc_id_id"]).sc_name}
+            sc_list.append(sc_dic)
+            cc_dic ={"c_name":Cc_chargeclasses.objects.get(pk = plan["cc_id_id"]).cc_name, "plice":C_charges.objects.get(pk = plan["c_charge_id"]).c_charge}
+            cc_list.append(cc_dic)
+            sc_list[sc_count]["cc"] = cc_list
+        else:
+            cc_dic ={"c_name":Cc_chargeclasses.objects.get(pk = plan["cc_id_id"]).cc_name, "plice":C_charges.objects.get(pk = plan["c_charge_id"]).c_charge}
+            sc_list[sc_count]["cc"].append(cc_dic)
+        
     # event["name"] = E_events.objects.get(pk = id).e_event_name
     # event["plice"] = 
 
@@ -198,22 +288,22 @@ def getTicketlist(id):
     # ticket.append = event
     # neme: 1等席 people: 大人
     # ticket = [{'id':'1','status':'残り僅か','name':'いいやつ', 'people': '大人', 'plice':'3500'}]
-    return ticket
+    return ticket, th_list, sc_list
 
 def event(request):
     if 'id' in request.GET:
-        event = getEvent(request.GET['id'])
-        ticketlist = getTicketlist(request.GET['id'])
+        event, placeDic = getEvent(request.GET['id'])
+        ticketlist, th_list, sc_list = getTicketlist(request.GET['id'])
         othersList = O_others.objects.filter(e_event_id_id = request.GET['id']).values("o_name", "o_detail")
     else:
         return redirect('/')
     try:
-        return render(request, 'event.html', {"user":request.session['member_id'],"name":"event","event":event,"ticketlist":ticketlist, "otherslist":othersList})
+        return render(request, 'event.html', {"user":request.session['member_id'],"name":"event","event":event,"ticketlist":ticketlist, "otherslist":othersList, "thlist":th_list, "sclist":sc_list, 'place_json': json.dumps(placeDic)})
     except:
         try:
-            return render(request, 'event.html', {"user":request.session['host_id'],"name":"host","event":event})
+            return render(request, 'event.html', {"user":request.session['host_id'],"name":"host","event":event, "otherslist":othersList, "thlist":th_list, "sclist":sc_list, 'place_json': json.dumps(placeDic)})
         except:
-            return render(request, 'event.html', {"user":"","name":"event","event":event})
+            return render(request, 'event.html', {"user":"","name":"event","event":event, "otherslist":othersList, "thlist":th_list, "sclist":sc_list, 'place_json': json.dumps(placeDic)})
 
 def register(request):
     id = ''
@@ -246,7 +336,7 @@ def register_m(request):
             # TODO:8
             # 受け取ったログイン情報をDBに登録する
             ##
-
+            hashps = make_hash(ps) 
 
             
             '''顔面用(仮)いつか消す'''
@@ -254,7 +344,7 @@ def register_m(request):
 
             # データーベースにぶち込む
             ## ユーザーテーブル
-            U_users.objects.create(u_name = name, u_happy_lucky_birthday = bath, u_mail_address = id, u_phone_number = phone, u_password = ps, uc_id_id = 1, u_photo_of_face = temp)
+            U_users.objects.create(u_name = name, u_happy_lucky_birthday = bath, u_mail_address = id, u_phone_number = phone, u_password = hashps, uc_id_id = 1, u_photo_of_face = temp)
             ## NFCテーブル
             userid = U_users.objects.filter(u_mail_address = id).values('u_user_id')
             N_nfcs.objects.create(u_user_id_id = userid[0].get("u_user_id"), n_nfcid = nfc)
@@ -426,7 +516,7 @@ def hostnfcget(request):
         return redirect('/')
     id = ''
     if 'id' in request.GET:
-        id = request.GET['id']
+        id = str(int(request.GET['id']) + 8635)
     return render(request,'hostnfcget.html',{"user":uid,"name":"host","id":id})
 
 def hostnfcget_a(request):
@@ -435,7 +525,7 @@ def hostnfcget_a(request):
     nfcid = request.GET['nfc']
 
     # イベントIDをGET
-    eventid = request.GET['id']
+    eventid = str(int(request.GET['id']) - 8635)
     
     # NFCテーブルにNFCがあるか探す
     prm = {"wasentry":0}
@@ -481,7 +571,7 @@ def hostnfcget_g(request):
     nfcid = request.GET['nfc']
 
     # イベントIDをGET
-    eventid = request.GET['id']
+    eventid = str(int(request.GET['id']) - 8635)
     
     # NFCテーブルにNFCがあるか探す
     prm = {"wasentry":0}
@@ -687,24 +777,30 @@ def pay_m(request):
      ##
     if 'id' in request.GET:
         #料金中間テーブルIDを取得し、料金idを使って料金テーブルとjoinして値段をchargeAmount(新変数)に代入
-        charge_id = Ww_charges_ww.objects.filter(c_charge_id__pk=request.GET['id'])
-        chargeAmount = C_charges.objects.filter(c_charge__pk=charge_id)
+        chargeid = Ww_charges_ww.objects.get(pk=request.GET['id']).c_charge_id_id
+        chargeAmount = C_charges.objects.get(pk=chargeid).c_charge
         if chargeAmount > 0:
-            payjp.api_key = "##########"
+            payjp.api_key = "######################"
             charge = payjp.Charge.create(
                 amount=chargeAmount,
                 card=request.POST['id'],
                 currency='jpy',
             )
-            print(charge)
             if 'status' in charge:
                 prm = {"err": charge['message']}
             else:
-                event_id = Ww_charges_ww.objects.filter(e_event_id__pk=request.GET['id'])
-                user_id = E_events.objects.filter(u_user_id__pk=event_id)
-                T_tickets.objects.create(e_event_id_id=event_id, u_user_id_id=user_id)
+                ccid = Ww_charges_ww.objects.get(pk=request.GET['id']).ww_charge_id
+                eventid = Ww_charges_ww.objects.get(pk=request.GET['id']).e_event_id_id
+                user_obj = U_users.objects.filter(u_mail_address = request.session['member_id'])
+                userid = user_obj[0].u_user_id
+                T_tickets.objects.create(e_event_id_id=eventid, u_user_id_id=userid, ww_charge_id_id =ccid)
                 prm = {"err": "Ok"}
         else:
+            ccid = Ww_charges_ww.objects.get(pk=request.GET['id']).ww_charge_id
+            eventid = Ww_charges_ww.objects.get(pk=request.GET['id']).e_event_id_id
+            user_obj = U_users.objects.filter(u_mail_address = request.session['member_id'])
+            userid = user_obj[0].u_user_id
+            T_tickets.objects.create(e_event_id_id=eventid, u_user_id_id=userid, ww_charge_id_id =ccid)
             prm = {"err": "Ok"}
     else:
         prm = {"err": "idが無効です"}

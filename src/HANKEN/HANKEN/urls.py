@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('kakakasnaiobahbagbouawobhjduebuiyabutevbovlshousb/', admin.site.urls),
+    path('###############', admin.site.urls),
     path('', include('hanken2.urls')),
     path('login', include('hanken2.urls')),
     path('login-m', include('hanken2.urls')),
@@ -39,4 +39,6 @@ urlpatterns = [
     path('genticket-m',include('hanken2.urls')),
     path('pay',include('hanken2.urls')),
     path('pay-m',include('hanken2.urls')),
+    path('terms',include('hanken2.urls')),
+    path('privacy',include('hanken2.urls')),
 ]

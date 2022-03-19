@@ -152,6 +152,9 @@ class T_tickets(models.Model):
     ## チケット-座席情報の外部キーは座席情報に移行しました
     # s_seat_id = models.ForeignKey('S_seats', db_column='s_seat_id', on_delete=models.CASCADE, default= -1 )
 
+    # 料金中間テーブルID
+    ww_charge_id = models.ForeignKey('Ww_charges_ww', db_column='ww_charge_id', on_delete=models.CASCADE)
+
     # 販売日時
     t_sold_onat = models.DateTimeField(auto_now_add=True)
 

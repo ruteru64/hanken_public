@@ -4,7 +4,6 @@ ul.event{
 }
 ul.contemts{
     list-style: none;
-    border: solid 1px #000000;
     width: 50%;
 }
 
@@ -17,6 +16,7 @@ ul.contemts li{
     padding: 20px;
 }
 
-.contents{
+ul.contents{
     list-style: none;
+    border: solid 1px #000000;
 }

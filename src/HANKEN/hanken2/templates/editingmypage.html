@@ -1,0 +1,130 @@
+{% extends "header.html" %}
+
+{% block contents %}
+
+<h2 class="begin">
+    マイページ編集
+</h2>
+<form id="post" action="editingmypage-m" method="post" enctype="multipart/form-data">{% csrf_token %}
+    <ul >
+        <tr>
+            <th>
+                ユーザーid
+            </th>
+            <td>
+                {{ userlist.u_user_id }}
+            </td>
+        </tr>
+        <br>
+        <tr>
+            <th>
+                名前
+            </th>
+            <td>
+                {{ userlist.u_name }}
+            </td>
+        </tr>
+        <br>
+        <tr>
+            <th>
+                メールアドレス
+            </th>
+            <td>
+                <input type="email" name="mail" value="{{ userlist.mail }}" placeholder="info@example.com" required/>
+            </td>
+        </tr>
+        <br>
+        <tr>
+            <th>
+                パスワード
+            </th>
+            <td>
+                <input type="password" name="password" value="" required/>
+            </td>
+        </tr>
+        <br>
+        <tr>
+            <th>
+                パスワード再入力
+            </th>
+            <td>
+                <input type="password" name="repassword" value="" required/>
+            </td>
+        </tr>
+        <br>
+        <tr>
+            <th>
+                誕生日
+            </th>
+            <td>
+                {{ userlist.u_happy_lucky_birthday }}
+            </td>
+        </tr>
+        <br>
+        <tr>
+            <th>
+                電話番号
+            </th>
+            <td>
+                <input type="tel" name="phone" value="{{ userlist.u_phone_number }}" placeholder="0120123456" required/>
+            </td>
+        </tr>
+        <br>
+        <tr>
+            <th>
+                NFC(各:は不要1桁の時:の後ろに0を追加)
+            </th>
+            <td>
+                <input type="text" name="nfc" value="{{ userlist.nfc }}" placeholder="0114c68618213200" required/>
+            </td>
+        </tr>
+        <br>
+        <tr>
+            <th>
+                郵便番号
+            </th>
+            <td>
+                <input type="text" name="address" value="{{ userlist.a_address_number }}" placeholder="1001000" required/>
+            </td>
+        </tr>
+        <br>
+        <tr>
+            <th>
+                お住所
+            </th>
+            <td>
+                <input type="text" name="prefer" value="{{ userlist.a_prefecture }}" placeholder="1001000" required/>
+            </td>
+            <td>
+                <input type="text" name="city" value="{{ userlist.a_city }}" placeholder="市区町村" required/>
+            </td>
+            <td>
+                <input type="text" name="number" value="{{ userlist.a_number }}" placeholder="番地" />
+            </td>
+            <td>
+                <input type="text" name="build" value="{{ userlist.a_build }}" placeholder="建物・部屋番号" />
+            </td>
+        </tr>
+        <br>
+        <tr>
+            <th>
+                最終更新日
+            </th>
+            <td>
+                {{ userlist.u_update_onat }}
+            </td>
+        </tr>
+    </ul>
+    <input type="submit" value="登録" />
+</form>
+<style>
+    .user{
+        list-style: none;
+        width: 50%;
+    }
+    .user li{
+        border: solid 1px #000000;
+    }
+</style>
+
+{% endblock %}

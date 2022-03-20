@@ -27,4 +27,6 @@ urlpatterns = [
     path('pay',views.pay,name='pay'),
     path('terms',views.terms,name='terms'),
     path('privacy',views.privacy,name='privacy'),
+    path('editingmypage', views.editingmypage, name='editingmypage'),
+    path('editingmypage-m', views.editingmypage_m, name='editingmypage-m'),
 ]

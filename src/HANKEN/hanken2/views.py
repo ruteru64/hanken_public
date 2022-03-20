@@ -1,3 +1,4 @@
+from email.policy import default
 import json
 from urllib import request
 from django.shortcuts import render
@@ -19,6 +20,44 @@ from django.db.models import Q
 
 import hashlib
 
+# メール関係
+import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+# パスワード隠してみた
+import os
+from dotenv import load_dotenv
+
+# メール関係
+def make_email(sender_email="", password="", receiver_email="",  subject="", text=""):
+    """
+    Gmailでメールを送信する
+    Args:
+        sender_email (str) : 自分のGmailのメールアドレス。
+        password (str) : アプリパスワード。Googleアカウントの設定で生成されたもの。
+        receiver_email (str) :メールを送る相手のメールアドレス
+        subject (str) : メールのタイトル
+    """
+    message = MIMEText(text)
+    message["Subject"] = subject
+    message["From"] = sender_email
+    message["To"] = receiver_email
+
+
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+        server.login(sender_email, password)
+        server.sendmail(
+            sender_email, receiver_email, message.as_string()
+        )
+
+
+def send_email(subject = "", text = ""):
+    # .envファイルの内容を読み込む
+    load_dotenv()
+    make_email(sender_email=os.environ['MAIL_ADDRESS'], password=os.environ['MAIL_PASSWORD'], receiver_email=os.environ['MAIL_ADDRESS'], subject = subject, text = text)
 
 # 人気のイベント
 def popevent():
@@ -46,13 +85,17 @@ def popevent():
         number = count
 
     for i in range(number):
+        tmp = datetime.timedelta(hours=9)
         event_dic = {}
         event_obj = E_events.objects.get(pk = eventid_dic2[i][0])
         event_dic["id"] = event_obj.e_event_id
         event_dic["name"] = event_obj.e_event_name
-        event_dic["date"] = event_obj.e_start
+        event_dic["date"] = event_obj.e_start + tmp
+        
         event_dic["place"] = P_places.objects.get(e_event_id_id = eventid_dic2[i][0]).p_prefecture
         # event_dic["place"] = placelist[0]["p_prefecture"]
+        if event_dic["date"].strftime('%Y/%m/%d') == "1111/11/11":
+            event_dic["date"] = "常時開催"
         event_list.append(event_dic)
 
     return event_list
@@ -89,7 +132,6 @@ def privacy(request):
     return render(request,"privacy.html",{})
 
 def eventsearch(request):
-    temp = 0
     ##
      # TODO:3
      # 送られてきたパラメータをイベント名に含むイベントを検索する
@@ -111,8 +153,11 @@ def eventsearch(request):
         event_dicts = {}
         event_dicts['id'] = events[i]['e_event_id']
         event_dicts['name'] = events[i]['e_event_name']
-        event_dicts['date'] = events[i]['e_start']
+        event_dicts['date'] = events[i]['e_start'].strftime('%Y-%m-%d')
         event_dicts['place'] = events[i]['p_places__p_prefecture']
+
+        if event_dicts['date'] == "1111-11-11":
+            event_dicts['date'] = '常時開催'
         event_list.append(event_dicts)
     prm["eventlist"] = event_list
     #eventlist の中の prm = prm['eventlist'][0]['id']
@@ -157,28 +202,34 @@ def login_m(request):
     else:
         return redirect("/login")
 
+
 def getEvent(id):
     ##
      # TODO:6
      # idのイベントの詳細を取得する
      # 返り値は{id:"",name:"",state:"",date:"",host:"",detail:""}
      ##
-
      # このidはイベントidのこと
+    tmp = datetime.timedelta(hours=9)
     dic = {}
     dic["id"] = id
     event = E_events.objects.get(pk = id)
     temp1 = P_places.objects.filter(e_event_id_id = id)
     dic["name"] = event.e_event_name
     dic["state"] = temp1[0].p_prefecture
-    dic["date"] = str(event.e_start)
+
+    dic["date"] = event.e_start + tmp
+
     dic["host"] = event.e_host_name
     dic["detail"] = event.e_outline
+    dic["url"] = temp1[0].p_url
 
     dic["xyzFlag"] = 1
     if temp1[0].p_ido == "":
         dic["xyzFlag"] = 0
 
+    if dic["date"].strftime('%Y/%m/%d') == "1111/11/11":
+            dic["date"] = "常時開催"
 
     event = dic
     # event = [{'id':'1','state':'tokyo',"date":'2020',"host":"ruteru","detail":"いろいろやるよ"}]
@@ -186,7 +237,7 @@ def getEvent(id):
     '''マップ用'''
     place_dic = {'ido':temp1[0].p_ido, 'kedo':temp1[0].p_kedo, 'name':temp1[0].p_build}
     return event, place_dic
-
+    
 def status_render(s_null, s_count):
     wariai = s_null / s_count
     if wariai == 0:
@@ -250,6 +301,15 @@ def getTicketlist(id):
         temp_dic["plice"] = C_charges.objects.get(pk = plan["c_charge_id"]).c_charge
 
         temp_dic["id"] = plan["ww_charge_id"]
+        seat_obj = S_seats.objects.filter(ti_ticketsinfo_id_id = ticketinfoid, sc_id_id = plan["sc_id_id"], t_ticket_id__isnull=True)
+        
+        # 席指定があればどんどん追加
+        # if seat_obj.exists:
+        #     temp_dic["seats"] = []
+        #     for seat_one in seat_obj:
+        #         seat_dic = {'seatid':seat_one.s_seats_id, 'seat':seat_one.s_place}
+        #         temp_dic["seats"].append(seat_dic)
+
 
         ticket.append(temp_dic)
 
@@ -279,7 +339,6 @@ def getTicketlist(id):
         else:
             cc_dic ={"c_name":Cc_chargeclasses.objects.get(pk = plan["cc_id_id"]).cc_name, "plice":C_charges.objects.get(pk = plan["c_charge_id"]).c_charge}
             sc_list[sc_count]["cc"].append(cc_dic)
-        
     # event["name"] = E_events.objects.get(pk = id).e_event_name
     # event["plice"] = 
 
@@ -287,7 +346,7 @@ def getTicketlist(id):
     # ticket = []
     # ticket.append = event
     # neme: 1等席 people: 大人
-    # ticket = [{'id':'1','status':'残り僅か','name':'いいやつ', 'people': '大人', 'plice':'3500'}]
+    # ticket = [{'id':'1','status':'残り僅か','name':'いいやつ', 'people': '大人', 'plice':'3500', 'seats':[{'seatid':1, 'seat':'S-1'}, {'seatid':2, 'seat':'S-2'}]}]
     return ticket, th_list, sc_list
 
 def event(request):
@@ -330,6 +389,19 @@ def register_m(request):
         # 空欄ダメだよー
         if "" in [id, ps, rps, name, bath, phone, nfc, address, prefer, city, number]:
             return redirect("/register")
+        
+        # 電話番号かぶりサヨナラ
+        if U_users.objects.filter(u_phone_number = phone).exists():
+            return redirect("/register")
+        
+        # NFCかぶりサヨナラ
+        if N_nfcs.objects.filter(n_nfcid = nfc).exists():
+            return redirect("/register")
+        
+        # メアドかぶりサヨナラ
+        if U_users.objects.filter(u_mail_address = id).exists():
+            return redirect("/register")
+        
 
         elif ps == rps:
             ##
@@ -344,12 +416,28 @@ def register_m(request):
 
             # データーベースにぶち込む
             ## ユーザーテーブル
-            U_users.objects.create(u_name = name, u_happy_lucky_birthday = bath, u_mail_address = id, u_phone_number = phone, u_password = hashps, uc_id_id = 1, u_photo_of_face = temp)
+            userid = U_users.objects.create(u_name = name, u_happy_lucky_birthday = bath, u_mail_address = id, u_phone_number = phone, u_password = hashps, uc_id_id = 1, u_photo_of_face = temp)
             ## NFCテーブル
-            userid = U_users.objects.filter(u_mail_address = id).values('u_user_id')
-            N_nfcs.objects.create(u_user_id_id = userid[0].get("u_user_id"), n_nfcid = nfc)
+            N_nfcs.objects.create(u_user_id_id = userid.u_user_id, n_nfcid = nfc)
             ## 住所テーブル
-            A_addresses.objects.create(u_user_id_id = userid[0].get("u_user_id"), a_address_number = address, a_prefecture = prefer, a_city = city, a_number = number, a_build = build)
+            A_addresses.objects.create(u_user_id_id = userid.u_user_id, a_address_number = address, a_prefecture = prefer, a_city = city, a_number = number, a_build = build)
+
+            # もし希望なら運営にメールを送る
+            try:
+                if request.POST['mail'] == 'plz':
+                    title = f'購入者アカウント希望【{ userid.u_user_id }:{ name }】'
+                    text = f'''
+                    ユーザーID: { userid.u_user_id }
+                    名前: { name }
+                    メールアドレス: { id }
+                    電話番号: { phone }
+                    郵便番号: { address }
+                    住所: { prefer }{ city }{ number }{ build }
+                    備考:{ request.POST["detail"] }
+                    '''
+                    send_email(subject = title, text = text)
+            except:
+                pass
 
             return redirect("/login")
         else:
@@ -389,7 +477,10 @@ def myevent(request):
         dic["name"] = E_events.objects.get(pk = eventid).e_event_name
         temp1 = P_places.objects.filter(e_event_id_id = eventid)
         dic["place"] = temp1[0].p_prefecture
-        dic["date"] = str(E_events.objects.get(pk = eventid).e_start)
+        dic["date"] = (E_events.objects.get(pk = eventid).e_start).strftime("%Y-%m-%d")
+        if dic["date"] == "1111-11-11":
+            dic["date"] = "常時開催"
+
 
         # 辞書をリストに追加
         list.append(dic)
@@ -428,9 +519,11 @@ def myticket(request):
         event["id"] = eventid
         event["name"] = events.e_event_name
         event["place"] = events.p_places.p_prefecture
-        event["date"] = events.e_start
+        event["date"] = (events.e_start).strftime("%Y-%m-%d")
+        if event["date"] == "1111-11-11":
+            event["date"] = "常時開催"
         temp = S_seats.objects.filter(t_ticket_id_id = ticketid)
-        if temp.exists():    
+        if temp.exists():
             event["seat"] = temp[0].s_place
         else:
             event["seat"] = "" 
@@ -438,6 +531,129 @@ def myticket(request):
 
     # list = ({"id":0,"name":"COD","place":"tokyo","date":"0201","seat":"A20"},{"id":2,"name":"CS50","place":"tokyo","date":"0228","seat":"A22"}) # ダミーデータのため後々消す
     return render(request,'myticket.html',{"user":id,"name":"myticket","ticketlist":list})
+
+def editingmypage(request):
+    id = ''
+    try:
+        id = request.session['member_id']
+    except:
+        try:
+            id = request.session['host_id']
+        except:
+            return redirect('/')
+    
+    ## TODO: userlist
+    user_list = U_users.objects.filter(u_mail_address = id).values("u_user_id", "u_name", "u_happy_lucky_birthday", "u_phone_number", "u_update_onat")
+    dic = user_list[0]
+    nfcs = N_nfcs.objects.filter(u_user_id = dic["u_user_id"], n_is_deleted = False)
+    dic["nfc"] = nfcs[0].n_nfcid
+    address_list = A_addresses.objects.filter(u_user_id_id = dic["u_user_id"]).values("a_address_number", "a_prefecture", "a_city", "a_number", "a_build")
+    dic.update(address_list[0])
+    dic["mail"] = id
+
+
+    return render(request,'editingmypage.html',{"user":id,"name":"editingmypage", "userlist":dic})
+
+def editingmypage_m(request):
+    id = ''
+    try:
+        id = request.session['member_id']
+    except:
+        try:
+            id = request.session['host_id']
+        except:
+            return redirect('/')
+    
+
+
+    mail = request.POST['mail']
+    ps = request.POST['password']
+    psr = request.POST['repassword']
+    hashps = make_hash(ps)
+    phone = request.POST['phone']
+    nfc = request.POST['nfc']
+    address = request.POST['address']
+    prefer = request.POST['prefer']
+    city = request.POST['city']
+    number = request.POST['number']
+    build = request.POST['build']
+
+    user_obj = U_users.objects.filter(u_mail_address = id)
+    userid = user_obj[0].u_user_id
+    mynfclist = N_nfcs.objects.filter(u_user_id_id = userid).values("n_nfcid", "n_is_deleted")
+
+    flag = 0
+
+    if not N_nfcs.objects.filter(n_nfcid = nfc).exists():
+        products = N_nfcs.objects.filter(u_user_id_id=userid)
+        products.update(n_is_deleted=True)
+        N_nfcs.objects.create(u_user_id_id = userid, n_nfcid = nfc)
+    else:
+        for i in mynfclist:
+            if i["n_nfcid"] == nfc:
+                # 論理削除がFlase= 消されてない:つまり今のNFCと同じ
+                if not i["n_is_deleted"]:
+                    flag = 1
+    if flag != 1:
+        return redirect('/editingmypage')
+
+    # メアドが自分以外の人に使われていたらbye
+    u_temp1 = U_users.objects.filter(u_mail_address = mail)
+    if u_temp1.exists():
+        if u_temp1[0].u_user_id != userid:
+            return redirect('/editingmypage')
+
+    # 電話番号が自分以外の人に使われてたらbye
+    u_temp2 = U_users.objects.filter(u_phone_number = phone)
+    if u_temp2.exists():
+        if u_temp2[0].u_user_id != userid:
+            return redirect('/editingmypage')
+
+    if ps == psr:
+
+        '''処理を書く'''
+        userObj = U_users.objects.get(pk=userid)
+
+
+        hashps = make_hash(ps)
+
+        mail_flag = 0
+        
+        if userObj.u_password != hashps:
+            userObj.u_password = hashps
+        
+        if userObj.u_mail_address != mail:
+            userObj.u_mail_address = mail
+            mail_flag = 1
+        
+        if userObj.u_phone_number != phone:
+            userObj.u_phone_number = phone
+
+        userObj.save()
+
+        jushoObj = A_addresses.objects.get(u_user_id_id = userid)
+        jushoObj.a_address_number = address
+        jushoObj.a_prefecture = prefer
+        jushoObj.a_city = city
+        jushoObj.a_number = number
+        jushoObj.a_build = build
+
+        jushoObj.save()
+
+        if mail_flag == 1:
+            try:
+                del request.session['member_id']
+                return redirect('/login')
+            except:
+                try:
+                    del request.session['host_id']
+                    return redirect('/login')
+                except: 
+                    pass
+                    return redirect('/')
+        return redirect('/mypage')
+    else:
+        return redirect('/editingmypage')
 
 def mypage(request):
     id = ''
@@ -530,7 +746,7 @@ def hostnfcget_a(request):
     # NFCテーブルにNFCがあるか探す
     prm = {"wasentry":0}
     nfcObj = N_nfcs.objects
-    if nfcObj.filter(n_nfcid = nfcid).exists():
+    if nfcObj.filter(n_nfcid = nfcid, n_is_deleted = False).exists():
         userid = nfcObj.get(n_nfcid = nfcid).u_user_id_id
         prm["isnfc"] = 1
         # 今回のイベントのチケットを持っているか
@@ -576,7 +792,7 @@ def hostnfcget_g(request):
     # NFCテーブルにNFCがあるか探す
     prm = {"wasentry":0}
     nfcObj = N_nfcs.objects
-    if nfcObj.filter(n_nfcid = nfcid).exists():
+    if nfcObj.filter(n_nfcid = nfcid, n_is_deleted = False).exists():
         userid = nfcObj.get(n_nfcid = nfcid).u_user_id_id
         prm["isnfc"] = 1
         # 今回のイベントのチケットを持っているか
@@ -655,6 +871,15 @@ def genticket_m(request):
             ido = temp[0].replace(' ','')
             kedo = temp[1].replace(' ','')
 
+
+        # 期間不正排除
+        if not ti_start < ti_end:
+            return redirect('/genticket')
+        if not startDate < endDate:
+            return redirect('/genticket')
+        if endDate < ti_end:
+            return redirect('/genticket')
+
         if startDate == '':
             startDate = "1111-11-11 11:11"
         if endDate == '':
@@ -664,6 +889,9 @@ def genticket_m(request):
         if ti_end == '':
             ti_end = "1111-11-11"
         
+        # 
+
+
         # startDate = startDate.replace('T', ' ')
         # endDate = endDate.replace('T', ' ')
 
@@ -780,7 +1008,7 @@ def pay_m(request):
         chargeid = Ww_charges_ww.objects.get(pk=request.GET['id']).c_charge_id_id
         chargeAmount = C_charges.objects.get(pk=chargeid).c_charge
         if chargeAmount > 0:
-            payjp.api_key = "######################"
+            payjp.api_key = "sk_test_9969d1219460ecdd40f02304"
             charge = payjp.Charge.create(
                 amount=chargeAmount,
                 card=request.POST['id'],
@@ -793,14 +1021,20 @@ def pay_m(request):
                 eventid = Ww_charges_ww.objects.get(pk=request.GET['id']).e_event_id_id
                 user_obj = U_users.objects.filter(u_mail_address = request.session['member_id'])
                 userid = user_obj[0].u_user_id
-                T_tickets.objects.create(e_event_id_id=eventid, u_user_id_id=userid, ww_charge_id_id =ccid)
+                ticketid = T_tickets.objects.create(e_event_id_id=eventid, u_user_id_id=userid, ww_charge_id_id =ccid)
+                '''席指定'''
+                # if request.GET['seatid'] != "":
+                #    S_seats.objects.get(pk = request.GET['seatid']).t_ticket_id_id = ticketid
                 prm = {"err": "Ok"}
         else:
             ccid = Ww_charges_ww.objects.get(pk=request.GET['id']).ww_charge_id
             eventid = Ww_charges_ww.objects.get(pk=request.GET['id']).e_event_id_id
             user_obj = U_users.objects.filter(u_mail_address = request.session['member_id'])
             userid = user_obj[0].u_user_id
-            T_tickets.objects.create(e_event_id_id=eventid, u_user_id_id=userid, ww_charge_id_id =ccid)
+            ticketid = T_tickets.objects.create(e_event_id_id=eventid, u_user_id_id=userid, ww_charge_id_id =ccid)
+            '''席指定'''
+            # if request.GET['seatid'] != "":
+            #    S_seats.objects.get(pk = request.GET['seatid']).t_ticket_id_id = ticketid
             prm = {"err": "Ok"}
     else:
         prm = {"err": "idが無効です"}

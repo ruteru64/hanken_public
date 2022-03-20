@@ -18,7 +18,7 @@
             パスワード
         </th>
         <td>
-            <input type="password" name="password" value="" required/>
+            <input type="password" name="password" value="" maxlength="255" required/>
         </td>
     </tr>
     <br>
@@ -27,7 +27,7 @@
             パスワード再入力
         </th>
         <td>
-            <input type="password" name="repassword" value="" required/>
+            <input type="password" name="repassword" value="" maxlength="255" required/>
         </td>
     </tr>
     <br>
@@ -36,7 +36,7 @@
             お名前
         </th>
         <td>
-            <input type="text" name="name" value="" required/>
+            <input type="text" name="name" value="" maxlength="255" required/>
         </td>
     </tr>
     <br>
@@ -136,11 +136,45 @@
             <input type="text" name="city" value="" placeholder="市区町村" required/>
         </td>
         <td>
-            <input type="text" name="number" value="" placeholder="番地" />
+            <input type="text" name="number" value="" placeholder="番地" required/>
         </td>
         <td>
             <input type="text" name="build" value="" placeholder="建物・部屋番号" />
         </td>
+    </tr>
+    <br>
+    <tr>
+        <td>
+            <label>
+                <input type="checkbox" id = "check" name="mail" value="plz">
+                販売者専用アカウントを希望する
+            </label>
+        </td>
+        <td id = "box">
+            <input type="text" name="detail" value="" placeholder="備考" />
+        </td>
+    </tr>
+    <br>
+    <br>
+    <tr>
+        <label>
+            <td>
+                <input type="checkbox" id="priv" name="priv" required>
+            </td>
+            <th>
+                <a href="/privacy" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>及び,<a href="/terms" target="_blank" rel="noopener noreferrer">利用規約</a>に同意いたしますか？
+            </th>
+        </label>
+    </tr>
+    <tr>
+        <label>
+            <td>
+                <input type="checkbox" id="m" name="m" required>
+            </td>
+            <th>
+                最新情報などのメールの送信に同意いたしますか？
+            </th>
+        </label>
     </tr>
     <br>
     <tr>

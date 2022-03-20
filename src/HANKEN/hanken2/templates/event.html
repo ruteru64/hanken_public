@@ -9,6 +9,7 @@
         <li><h2>イベント開催日 </h2><p>{{ event.date }}</p></li>
         <li><h2>イベント開催者 </h2><p>{{ event.host }}</p></li>
         <li><h2>イベント詳細 </h2><p>{{ event.detail }}</p></li>
+        <li><h2>関連サイト</h2><a href={{ event.url }} target="_blank" rel="noopener noreferrer"><p>{{ event.url }}</p></a></li>
         {% if otherslist.0 != "" %}
         <li>
             <h4>その他の情報</h4>
@@ -48,6 +49,23 @@
 {% if event.xyzFlag == 1 %}
 <!--マップ-->
 <div id="view_map" style="height: 350px;width:350px"></div>
+{% endif %}
+
+{% if name == 'event' %}
+<ul class="contemts">
+    {% for ticket in ticketlist %}
+    <li>
+        <a href="/pay?id={{ ticket.id }}">
+            <ul class="contents">
+                <li>種別:{{ ticket.name }}</li>
+                <li>対象年齢:{{ ticket.people }}</li>
+                <li>価格:{{ ticket.plice }} </li>
+                <li>状態:{{ ticket.status }} </li>
+            </ul>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
 <script type="text/javascript">
     const places = JSON.parse('{{ place_json|safe }}');
     //緯度,経度,ズーム
@@ -67,20 +85,4 @@
     });
 </script>
 {% endif %}
-
-{% if name == 'event' %}
-<ul class="contemts">
-    {% for ticket in ticketlist %}
-    <li>
-        <a href="/pay?id={{ ticket.id }}">
-            <ul class="contents">
-                <li>種別:{{ ticket.name }}</li>
-                <li>対象年齢:{{ ticket.people }}</li>
-                <li>価格:{{ ticket.plice }} </li>
-                <li>状態:{{ ticket.status }} </li>
-            </ul>
-        </a>
-    </li>
-    {% endfor %}
-</ul>
-{% endif %} {% endblock %}
+{% endblock %}

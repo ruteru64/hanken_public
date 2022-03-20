@@ -46,6 +46,7 @@ https://play.google.com/store/apps/details?id=com.node.hanken_native
 * SQLite
 * NFC
 * AWS
+* GNU Make
 
 
 ## ファイル構成

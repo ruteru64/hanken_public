@@ -1,6 +1,5 @@
 run:
-	sudo python3 /home/ubuntu/HANKEN/src/HANKEN/manage.py runsslserver 172.31.5.170:443 --certificate /etc/letsencrypt/live/hanken.link/fullchain.p
-em --key /etc/letsencrypt/live/hanken.link/privkey.pem
+	sudo python3 /home/ubuntu/HANKEN/src/HANKEN/manage.py runsslserver 172.31.5.170:443 --certificate /etc/letsencrypt/live/hanken.link/fullchain.pem --key /etc/letsencrypt/live/hanken.link/privkey.pem
 
 migrate:
 	python3 manage.py migrate

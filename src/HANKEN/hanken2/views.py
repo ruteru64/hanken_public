@@ -4,12 +4,13 @@ from urllib import request
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.http.response import JsonResponse
+from numpy import product
 import requests
 import csv
 from django.http import HttpResponse
 import io
 
-from .models import A_addresses, E_events, N_nfcs, T_tickets, U_users, P_places, O_others, Cc_chargeclasses, Yy_eventtags, Ww_charges_ww, Sc_seatclasses, Zz_events_connect_tags_zz, C_charges, M_maxes, Oo_ticket_connect_charge_oo, Ti_ticketsinfos, S_seats
+from .models import A_addresses, E_events, N_nfcs, T_tickets, U_users, P_places, O_others, Cc_chargeclasses, Yy_eventtags, Ww_charges_ww, Sc_seatclasses, Zz_events_connect_tags_zz, C_charges, M_maxes, Oo_ticket_connect_charge_oo, Ti_ticketsinfos, S_seats, L_lostPasswords
 # テーブルのスペルミスってた()
 from .models import En_enries as En_entries
 
@@ -20,6 +21,9 @@ from django.db.models import Q
 
 import hashlib
 
+# ランダムパス
+import random, string
+
 # メール関係
 import smtplib
 import ssl
@@ -29,6 +33,7 @@ from email.mime.multipart import MIMEMultipart
 # パスワード隠してみた
 import os
 from dotenv import load_dotenv
+
 
 # メール関係
 def make_email(sender_email="", password="", receiver_email="",  subject="", text=""):
@@ -54,10 +59,15 @@ def make_email(sender_email="", password="", receiver_email="",  subject="", tex
         )
 
 
-def send_email(subject = "", text = ""):
+def send_email_us(subject = "", text = ""):
     # .envファイルの内容を読み込む
     load_dotenv()
     make_email(sender_email=os.environ['MAIL_ADDRESS'], password=os.environ['MAIL_PASSWORD'], receiver_email=os.environ['MAIL_ADDRESS'], subject = subject, text = text)
+
+def send_email_others(subject = "", text = "", receiver_email=""):
+    # .envファイルの内容を読み込む
+    load_dotenv()
+    make_email(sender_email=os.environ['MAIL_ADDRESS'], password=os.environ['MAIL_PASSWORD'], receiver_email=receiver_email, subject = subject, text = text)
 
 # 人気のイベント
 def popevent():
@@ -100,6 +110,114 @@ def popevent():
 
     return event_list
 
+"""パスワードを忘れた場合"""
+def forgotPassword(request):
+    return render(request,"forgotPassword.html",{})
+
+def randomname(n):
+   return ''.join(random.choices(string.ascii_letters + string.digits, k=n))
+
+def shinsa(moji):
+    return L_lostPasswords.objects.filter(l_password = moji, l_is_deleted = False).exists()
+
+def forgotPassword_m(request):
+    # POSTでメアドを受信
+    mail = request.POST["email"]
+
+    # そのメアドがU_usersに登録されてか
+    userObj = U_users.objects.filter(u_mail_address = mail)
+
+    if not userObj.exists():
+        ## ないならRegistrに飛ばす
+        return redirect('/register')
+
+    # ランダムな文字列を発生
+    rand = randomname(5)
+    ## すでに存在する文字列ならやり直し
+    while(shinsa(make_hash(rand))):
+            rand = randomname(5)
+    randhash = make_hash(rand)
+    # メアドとランダム文字列をDBに登録or更新
+    product, created = L_lostPasswords.objects.update_or_create(pk=mail, defaults={'l_password':randhash, 'l_is_deleted':False })
+    ## 更新の場合は論理削除をFalse
+
+
+    # メアドにランダム文字列を送り付ける
+    
+    title = f'HANKENパスワード再設定認証コード'
+
+    text= f'''
+HANKENアカウントのパスワードを再設定するには、以下の認証コードを入力してください。 
+---------------
+認証コード
+
+{ rand }
+
+---------------
+※本メールはHANKENにてお問い合わせをされた方に自動送信しています。
+　お心当たりのない場合は、お手数ですが当メールを破棄してください。
+---------------
+'''
+
+    send_email_others(subject = title, text = text, receiver_email=mail)
+
+    request.session['mail_address'] = mail
+
+    return redirect('/forgotPasswordUse')
+
+def forgotPasswordUse(request):
+    mailAddress = request.session['mail_address']
+    mailSplit = mailAddress.split('@')
+    mails = ""
+    count = len(mailSplit[0])
+    if count <= 5:
+        for i in range(count):
+            mails = mails + '*'
+    else:
+        mails = mailSplit[0][:5]
+        for i in range(count-5):
+            mails = mails + '*'
+    mails = mails + "@" +mailSplit[1]
+
+    return render(request,"forgotPasswordUse.html",{"mail":mails})
+
+def forgotPasswordUse_m(request):
+    # POSTでメアドとPSを受信
+    mail = request.session['mail_address']
+    hashps = make_hash(request.POST['password'])
+
+    # メアドと仮psが一致しなければやり直し
+    dbps = L_lostPasswords.objects.get(pk=mail)
+    if dbps.l_password != hashps:
+        return redirect('/forgotPasswordUse')
+
+    # 一致したら、次のページへ
+    return redirect('/resetPassword')
+
+def resetPassword(request):
+    return render(request,"resetPassword.html",{})
+
+def resetPassword_m(request):
+    
+    # 二つのパスワードを確認
+    mail = request.session["mail_address"]
+    ps = request.POST["password"]
+    rps = request.POST["rpassword"]
+    if ps != rps:
+        return redirect('/resetPassword')
+    # DBへ登録
+    userObj = U_users.objects.get(u_mail_address=mail) 
+    userObj.u_password = make_hash(ps)
+    userObj.save()
+
+    product = L_lostPasswords.objects.get(pk=mail)
+    product.l_is_deleted = True
+    product.save()
+
+    del request.session['mail_address']
+
+    return redirect('/login')
+
 # Create your views here.
 def index(request):
     poplist = popevent()
@@ -113,6 +231,9 @@ def index(request):
         except:
             id = ''
     return render(request, 'index.html', {"user":id,"name":"Home","poplist":poplist})
+
+def lp(request):
+    return render(request, 'lp.html', {"user":"","name":"lp"})
 
 def login(request):
     try:
@@ -131,6 +252,71 @@ def terms(request):
 def privacy(request):
     return render(request,"privacy.html",{})
 
+def contactUs(request):
+    return render(request,"contactUs.html",{})
+
+def contactUs_m(request):
+    try:
+        userObj = U_users.objects.filter(u_mail_address = request.session['member_id'])
+        id = userObj[0].u_user_id
+    except:
+        try:
+            userObj = U_users.objects.filter(u_mail_address = request.session['host_id'])
+            id = userObj[0].u_user_id
+        except:
+            id = "非会員"
+    
+    contentsid = request.POST["contents"]
+    mail = request.POST["mail"]
+    name = request.POST["name"]
+    tel = request.POST["tel"]
+    detail = request.POST["detail"]
+
+    contents = ""
+    if contentsid == "":
+        return redirect("/contactUs")
+    elif contentsid == "01":
+        contents = "HANKENについて"
+    elif contentsid == "02":
+        contents = "HANKEN 会員について"
+    elif contentsid == "03":
+        contents = "HANKEN 会員退会希望"
+    else:
+        contents = "その他ご意見、お問い合わせ"
+    
+    title = f'お問い合わせ【{ id }:{ contents }】'
+    text = f'''
+ユーザーID: { id }
+名前: { name }
+メールアドレス: { mail }
+電話番号: { tel }
+詳細:
+{ detail }
+    '''
+    send_email_us(subject = title, text = text)
+
+    text2 = f'''{ name } 様
+
+いつもHANKENをご利用ありがとうございます。
+『{ contents }』について下記のお問い合わせを受け付けいたしました。
+後ほど担当者よりご連絡をさせて頂きます。
+恐れ入りますが、しばらくお待ちいただきますようお願い申し上げます。
+---------------
+お問い合わせ内容
+
+「{ detail }」
+---------------
+※本メールはHANKENにてお問い合わせをされた方に自動送信しています。
+　お心当たりのない場合は、お手数ですが当メールをご返信しご連絡ください。
+※お問い合わせいただいた内容の回答は不定期で行っております。
+内容によってはお時間がかかる場合や、回答を差し上げられない場合がございます。また、お電話でのご連絡は行っておりません。予めご了承ください。
+---------------
+'''
+
+    send_email_others(subject = title, text = text2, receiver_email=mail)
+    return redirect('/mypage')
+
+
 def eventsearch(request):
     ##
      # TODO:3
@@ -139,22 +325,49 @@ def eventsearch(request):
      #パラメータはrequest.GET
      ##
     #パラメータ=検索ワード(request.GETで取ってこれる)を含んでいるイベントの情報(id?)を取ってくる
-    event_object = E_events.objects.filter(e_event_name__contains=request.GET['eventname'])
-    events = event_object.values('e_event_id', 'e_event_name', 'e_start', 'p_places__p_prefecture')
-    length = len(events)
+    eventtagid = Yy_eventtags.objects.filter(yy_name__contains=request.GET['eventname']).values("yy_eventtag_id")
+    # [{id:1}{id:2}]
+    event_Obj2 = []
+    for i in eventtagid:
+        eventidlist = Zz_events_connect_tags_zz.objects.filter(yy_eventtag_id_id=i['yy_eventtag_id']).values("e_event_id_id")
+        # [{eventid:1}{eventid:2}]
+        for k in eventidlist:
+            # event_Obj2.append(E_events.objects.get(pk = k['e_event_id_id']))
+            event_Obj2.append(k)
     
+    event_object = E_events.objects.filter(e_event_name__contains=request.GET['eventname']).values("e_event_id")
+    # [1,2 , 4]
+    
+    eventid_list = []
+    # if event_object.exists():
+    for i in event_object:
+        eventid_list.append(i['e_event_id'])
+    for i in event_Obj2:
+        if i['e_event_id_id'] in eventid_list:
+            continue
+        eventid_list.append(i['e_event_id_id'])
+
+
+    # events = event_object.values('e_event_id', 'e_event_name', 'e_start', 'p_places__p_prefecture')
+    
+
+    # [{id:1, name:~~, }{id:2, name:~~}{id:3, name:~~}]
+    # length = len(events)
+    
+    length = len(eventid_list)
         
     
     #　一回辞書にして、jsonにしてくれる　length 中の｛｝の数のかず、イベントリストの中の｛｝の数を増やしていく
     prm = {'length':length}
     #'eventlist':[{'id':"1",'name':"event",'date':'datetime','place':"123"}, {}, {}]
     event_list = []
-    for i in range(length):
+    for i in eventid_list:
+        eventobj = E_events.objects.get(pk = i)
         event_dicts = {}
-        event_dicts['id'] = events[i]['e_event_id']
-        event_dicts['name'] = events[i]['e_event_name']
-        event_dicts['date'] = events[i]['e_start'].strftime('%Y-%m-%d')
-        event_dicts['place'] = events[i]['p_places__p_prefecture']
+        event_dicts['id'] = i
+        event_dicts['name'] = eventobj.e_event_name
+        event_dicts['date'] = eventobj.e_start.strftime('%Y-%m-%d')
+        event_dicts['place'] = P_places.objects.get(e_event_id_id = i).p_prefecture
 
         if event_dicts['date'] == "1111-11-11":
             event_dicts['date'] = '常時開催'
@@ -202,6 +415,55 @@ def login_m(request):
     else:
         return redirect("/login")
 
+def editMyEvent(request):
+    if 'id' in request.GET:
+        event, placeDic = getEvent(request.GET['id'])
+        ticketlist, th_list, sc_list = getTicketlist(request.GET['id'])
+        othersList = O_others.objects.filter(e_event_id_id = request.GET['id']).values("o_name", "o_detail")
+        request.session['eventid'] = request.GET['id']
+        try:
+            if request.session["host_id"] != U_users.objects.get(pk=event["hostid"]).u_mail_address:
+                return redirect('/')
+        except:
+            return redirect('/')
+    else:
+        return redirect('/')
+
+    
+    try:
+        return render(request,"editMyEvent.html",{"user":request.session['host_id'],"name":"host","event":event, "otherslist":othersList, "thlist":th_list, "sclist":sc_list, 'place_json': json.dumps(placeDic)})
+    except:
+        return redirect('/')
+
+def editMyEvent_m(request):
+    eventid = request.session['eventid']
+    detail = request.POST["detail"]
+    tags = request.POST["tags"]
+    
+    ticketinfoid = Ti_ticketsinfos.objects.get(e_event_id_id = eventid).ti_ticketsinfo_id
+    caplist = M_maxes.objects.filter(ti_ticketsinfo_id_id = ticketinfoid).values('m_capacity_id')
+
+    if tags != "":
+        taglist = tags.replace(' ', '').split(',')
+        add_zztags = []
+        for tag in taglist:    
+            eventtagObj, created = Yy_eventtags.objects.get_or_create(yy_name=tag)
+            zztag = Zz_events_connect_tags_zz(e_event_id_id = eventid, yy_eventtag_id_id = eventtagObj.yy_eventtag_id)
+            add_zztags.append(zztag)
+        Zz_events_connect_tags_zz.objects.bulk_create(add_zztags)
+    
+    event = E_events.objects.get(pk=eventid)
+    event.e_outline = detail
+    event.save()
+
+    for id in caplist:
+        capid = "capid"+str(id['m_capacity_id'])
+        cap = request.POST[capid]
+        caps = M_maxes.objects.get(m_capacity_id=id['m_capacity_id'])
+        caps.m_capacity = cap
+        caps.save()
+    return redirect("/event")
+
 
 def getEvent(id):
     ##
@@ -215,11 +477,18 @@ def getEvent(id):
     dic["id"] = id
     event = E_events.objects.get(pk = id)
     temp1 = P_places.objects.filter(e_event_id_id = id)
+    ticketinfoid = Ti_ticketsinfos.objects.get(e_event_id_id = id).ti_ticketsinfo_id
+    dic["capacity"] = M_maxes.objects.filter(ti_ticketsinfo_id_id = ticketinfoid).values('m_capacity_id', 'sc_id_id', 'm_capacity')
+    count = 0
+    for i in dic["capacity"]:
+        dic["capacity"][count]['sc_name'] = Sc_seatclasses.objects.get(pk = i['sc_id_id']).sc_name
+        count += 1
     dic["name"] = event.e_event_name
     dic["state"] = temp1[0].p_prefecture
 
     dic["date"] = event.e_start + tmp
 
+    dic["hostid"] = event.u_user_id_id
     dic["host"] = event.e_host_name
     dic["detail"] = event.e_outline
     dic["url"] = temp1[0].p_url
@@ -230,6 +499,14 @@ def getEvent(id):
 
     if dic["date"].strftime('%Y/%m/%d') == "1111/11/11":
             dic["date"] = "常時開催"
+    
+    taglist = []
+    tagsid = Zz_events_connect_tags_zz.objects.filter(e_event_id=id).values('yy_eventtag_id_id')
+    # [{id:~~}{id:~~}]
+    for i in tagsid:
+        taglist.append(Yy_eventtags.objects.get(pk=i['yy_eventtag_id_id']).yy_name)
+
+    dic["tags"] = taglist
 
     event = dic
     # event = [{'id':'1','state':'tokyo',"date":'2020',"host":"ruteru","detail":"いろいろやるよ"}]
@@ -349,17 +626,28 @@ def getTicketlist(id):
     # ticket = [{'id':'1','status':'残り僅か','name':'いいやつ', 'people': '大人', 'plice':'3500', 'seats':[{'seatid':1, 'seat':'S-1'}, {'seatid':2, 'seat':'S-2'}]}]
     return ticket, th_list, sc_list
 
+
 def event(request):
     if 'id' in request.GET:
         event, placeDic = getEvent(request.GET['id'])
         ticketlist, th_list, sc_list = getTicketlist(request.GET['id'])
         othersList = O_others.objects.filter(e_event_id_id = request.GET['id']).values("o_name", "o_detail")
     else:
-        return redirect('/')
+        try:
+            id = request.session['eventid']
+            event, placeDic = getEvent(id)
+            ticketlist, th_list, sc_list = getTicketlist(id)
+            othersList = O_others.objects.filter(e_event_id_id = id).values("o_name", "o_detail")
+            del request.session['eventid']
+        except:
+            return redirect('/')
     try:
         return render(request, 'event.html', {"user":request.session['member_id'],"name":"event","event":event,"ticketlist":ticketlist, "otherslist":othersList, "thlist":th_list, "sclist":sc_list, 'place_json': json.dumps(placeDic)})
     except:
+        event["hostFlag"] = 0
         try:
+            if request.session["host_id"] == U_users.objects.get(pk=event["hostid"]).u_mail_address:
+                event["hostFlag"] = 1
             return render(request, 'event.html', {"user":request.session['host_id'],"name":"host","event":event, "otherslist":othersList, "thlist":th_list, "sclist":sc_list, 'place_json': json.dumps(placeDic)})
         except:
             return render(request, 'event.html', {"user":"","name":"event","event":event, "otherslist":othersList, "thlist":th_list, "sclist":sc_list, 'place_json': json.dumps(placeDic)})
@@ -435,9 +723,40 @@ def register_m(request):
                     住所: { prefer }{ city }{ number }{ build }
                     備考:{ request.POST["detail"] }
                     '''
-                    send_email(subject = title, text = text)
+                    send_email_us(subject = title, text = text)
             except:
                 pass
+
+            # 登録完了メールを送り付ける
+            eventlist = popevent()
+            title = f'【ご登録確認】HANKENへのお申し込みありがとうございます'
+
+            text= f'''
+	
+{ name }さん、こんにちは。
+HANKEN運営事務局です。
+
+この度はご登録いただきましてありがとうございます。
+
+---------------
+人気のイベント
+
+▼【{ eventlist[0]["place"] }】{ eventlist[0]["name"] }
+http://127.0.0.1:8000/event?id={eventlist[0]["id"]}
+
+▼【{ eventlist[1]["place"] }】{ eventlist[1]["name"] }
+http://127.0.0.1:8000/event?id={eventlist[1]["id"]}
+
+▼【{ eventlist[2]["place"] }】{ eventlist[2]["name"] }
+http://127.0.0.1:8000/event?id={eventlist[2]["id"]}
+
+---------------
+※本メールはHANKENにてお問い合わせをされた方に自動送信しています。
+　お心当たりのない場合は、お手数ですが当メールを破棄してください。
+---------------
+'''
+
+            send_email_others(subject = title, text = text, receiver_email=id)
 
             return redirect("/login")
         else:
@@ -733,7 +1052,8 @@ def hostnfcget(request):
     id = ''
     if 'id' in request.GET:
         id = str(int(request.GET['id']) + 8635)
-    return render(request,'hostnfcget.html',{"user":uid,"name":"host","id":id})
+    pas = make_hash(id)
+    return render(request,'hostnfcget.html',{"user":uid,"name":"host","id":id,"pass":pas})
 
 def hostnfcget_a(request):
     """hostnfcget_gと同じ"""
@@ -863,6 +1183,7 @@ def genticket_m(request):
         institution = request.POST['institution']
         url = request.POST['url']
         xyz = request.POST['xyz']
+        tags = request.POST['tags']
         
         ido = ""
         kedo = ""
@@ -873,9 +1194,9 @@ def genticket_m(request):
 
 
         # 期間不正排除
-        if not ti_start < ti_end:
+        if not ti_start <= ti_end:
             return redirect('/genticket')
-        if not startDate < endDate:
+        if not startDate <= endDate:
             return redirect('/genticket')
         if endDate < ti_end:
             return redirect('/genticket')
@@ -888,8 +1209,6 @@ def genticket_m(request):
             ti_start = "1111-11-11"
         if ti_end == '':
             ti_end = "1111-11-11"
-        
-        # 
 
 
         # startDate = startDate.replace('T', ' ')
@@ -912,6 +1231,16 @@ def genticket_m(request):
         # eventid = E_events.objects.latest("e_created_onat").e_event_id
         # print("イベントID", eventid, type(eventid))
 
+        # イベントtag
+        if tags != "":
+            taglist = tags.replace(' ', '').split(',')
+            add_zztags = []
+            for tag in taglist:    
+                eventtagObj, created = Yy_eventtags.objects.get_or_create(yy_name=tag)
+                zztag = Zz_events_connect_tags_zz(e_event_id_id = eventid, yy_eventtag_id_id = eventtagObj.yy_eventtag_id)
+                add_zztags.append(zztag)
+            Zz_events_connect_tags_zz.objects.bulk_create(add_zztags)
+
         # チケット情報テーブル
         ticketsinfoid = Ti_ticketsinfos.objects.create(e_event_id_id = eventid, ti_start = ti_start, ti_end = ti_end).ti_ticketsinfo_id
         
@@ -926,10 +1255,18 @@ def genticket_m(request):
             if re.match(r'body_*',i[0]):
                 bodyList.append(i[1])
         # titleListの要素数分をぶん回す
-        for i in range(len(titleList)):
-            # DBに追加
-            # print(titleList[i], bodyList[i])
-            O_others.objects.create(e_event_id_id = eventid, o_name = titleList[i], o_detail = bodyList[i])
+        # for i in range(len(titleList)):
+        #     # DBに追加
+        #     # print(titleList[i], bodyList[i])
+        #     O_others.objects.create(e_event_id_id = eventid, o_name = titleList[i], o_detail = bodyList[i])
+        
+        add_others = []
+        for i in range(len(titleList)): 
+            if bodyList[i] == "":
+                continue
+            other = O_others(e_event_id_id = eventid, o_name = titleList[i], o_detail = bodyList[i])
+            add_others.append(other)
+        O_others.objects.bulk_create(add_others)
 
 
         
@@ -1008,7 +1345,7 @@ def pay_m(request):
         chargeid = Ww_charges_ww.objects.get(pk=request.GET['id']).c_charge_id_id
         chargeAmount = C_charges.objects.get(pk=chargeid).c_charge
         if chargeAmount > 0:
-            payjp.api_key = "sk_test_9969d1219460ecdd40f02304"
+            payjp.api_key = "###############"
             charge = payjp.Charge.create(
                 amount=chargeAmount,
                 card=request.POST['id'],

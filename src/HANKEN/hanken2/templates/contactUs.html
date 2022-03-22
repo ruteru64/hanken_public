@@ -1,0 +1,119 @@
+{% extends "header.html" %} {% block contents %}
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'contactUs.css' %}">
+<div class="contents clearfix enter-purchaser-info Regist ContactUs">
+
+    <div class="contents">
+    <form id="post" method="post" action="contactUs-m">{% csrf_token %}
+        <h2 class="section-ttl">お問い合わせ</h2>
+        <p class="read">
+            HANKENのお問い合わせは、下記フォームにご記入のうえ送信してください。
+        </p>
+    
+        <div class="warning">
+        <h3 class="section-sub-ttl">お問い合わせの前に</h3>
+        <p>
+            よくあるご質問と回答集をご用意しています。ご不明な点がございましたら、お問い合わせの前にまず、ご覧ください。
+        </p>
+        <div class="link_outer">
+            <a href="/" target="_blank">よくあるご質問</a>
+        </div>
+        <div class="warning_sub">
+            ※ 当グループからのeメールでの回答は、お客様個人にお送りするもので、回答内容の全部または一部を弊社の許可なく他に転載、二次利用することはお控えください。 <br>
+            ※ お客様からいただいたメールアドレスが正しくない場合やシステム障害が発生した場合などにはお返事できない場合がございます。<br>
+            ※ HANKEN会員の退会をご希望される場合は、お問い合わせの種類にて「HANKEN会員退会希望」をお選びいただき、ご入会時にご登録いただいたメールアドレスを記入のうえ、送信してください。<br>
+            ※ お客様のご都合による座席指定のキャンセル、ご購入のHANKENの払い戻し、イベント・券種の変更は承っておりません。
+        </div>
+    </div>
+    
+    
+        <div class="input-area">
+            <div class="d-table">
+                <div class="d-tr">
+                    <div class="d-th label sp-not-view">お問い合わせの種類</div>
+                    <div class="d-td">
+                        <div class="d-ib category">
+                            <select name="contents">
+                                <option value="" selected="">選択してください</option>
+                                
+                                <option value="01">HANKENについて</option>
+                                
+                                <option value="02">HANKEN 会員について</option>
+                                
+                                <option value="03">HANKEN 会員退会希望</option>
+                                                            
+                                <option value="04">その他ご意見、お問い合わせ</option>
+                                
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <hr class="border">
+    
+            <div class="d-table name">
+                <div class="d-tr name-kanji">
+                    <div class="d-th label sp-not-view">お名前</div>
+                    <div class="d-td name1"><input type="text" name="name" placeholder="お名前" value="" required></div>
+                </div>
+            </div>
+    
+            <hr class="border">
+
+            <div class="d-table mail">
+                <div class="d-tr">
+                    <div class="d-th label sp-not-view">メールアドレス</div>
+                    <div class="d-td"><input type="email" name="mail" placeholder="info@example.com" value="" required></div>
+                </div>
+                <div class="d-tr">
+                    <div class="d-th label sp-not-view"></div>
+                    <div class="d-td">
+                        <p class="red-text">
+                            <span class="strong">【ドメイン指定受信をご利用の場合について】</span><br>
+                            ※ 携帯電話のドメイン指定受信をされている場合、「@gmail.com」を追加設定してください。<br>
+                            ※ au(@ezweb.ne.jp)をご利用の場合、上記に加え「なりすまし規制回避リスト」にも「@gmail.com」の追加設定をしてください。
+                        </p>
+                    </div>
+                </div>
+            </div>
+    
+            <hr class="border">
+            <div class="d-table tel">
+                <div class="d-tr">
+                    <div class="d-th label sp-not-view">電話番号</div>
+    
+                    <div class="d-td tel"><input type="tel" name="tel" placeholder="半角数字" value="" required></div>
+                </div>
+            </div>
+
+            <hr class="border">
+            <div class="d-table textarea">
+                <div class="d-tr">
+                    <div class="d-th label sp-not-view">お問い合わせ内容</div>
+                    <div class="d-td">
+                        <p class="help">
+                            ※ HANKENについてのお問い合わせの際は、下記の記載をお願いいたします。<br>
+                            購入イベント名 / チケット番号 / 購入日時 など<br>
+                            ※ 各WEB サイトについてのお問い合わせは、該当のURLを記載してください。
+                        </p>
+                        <textarea name="detail" maxlength="2000" placeholder="お問い合わせ内容をご入力ください。"></textarea>
+                    </div>
+                </div>
+            </div>
+    </div>
+    
+    
+            <hr class="border">
+         </div>
+    
+         <div class="btn-area clearfix">
+            <div class="btn prev-btn"><button type="button" onclick="javascript:history.back();">戻る</button></div>
+            <div class="btn next-btn red-btn"><button>送信</button></div>
+         </div>
+    </form></div>
+    
+    </div>
+
+{% endblock %}

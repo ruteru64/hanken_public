@@ -18,14 +18,17 @@ ul.contemts li{
 
 .search_container{
     box-sizing: border-box;
+    text-align: center;
+    margin-bottom: 60px;
 }
 .search_container input[type="text"]{
-    border: 1px solid #999;
-    padding: 3px 5px;
-    border-radius: 20px;
-    height: 2.0em;
-    width: 245px;
+    border: 2px solid #999;
+    padding: 3px 50px 3px 20px;
+    border-radius: 30px;
+    height: 2.5em;
+    width: 600px;
     overflow: hidden;
+    font-size: 1.3em;
 }
 .search_container input[type="text"]:focus {
     outline: 0;
@@ -40,4 +43,57 @@ ul.contemts li{
     outline : none;
     display: inline-block;
     vertical-align: middle;
+    position: relative;
+}
+
+.search_container button::before {
+    position: absolute;
+    content: '';
+    width: 15px;
+    height: 15px;
+    top: calc(50% - 9px);
+    right: calc(50% + 30px);
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #000000;
+}
+.search_container button::after {
+    position: absolute;
+    content: '';
+    width: 8px;
+    height: 6px;
+    top: calc(50% + 6px);
+    right: calc(50% + 26px);
+    border-top: solid 2px #000000;
+    transform: rotate(45deg);
+}
+
+h1{
+    width: 45%;
+    padding-left: 30px;
+    font-family: 'Sen';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 120px;
+    letter-spacing: 0.48px;
+    color: #455A64;
+}
+h2{
+    width: 360px;
+    font-family: 'Sen';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 120px;
+    letter-spacing: 0.48px;
+    color: #FFFFFF;
+    margin: 40px 0;
+}
+
+.top_img{
+    width: 100%;
+    margin-bottom: 80px;
+}
+
+.wrapper{
+    padding: 100px 9% 80px;
+    background-color: #FFECAF;
 }

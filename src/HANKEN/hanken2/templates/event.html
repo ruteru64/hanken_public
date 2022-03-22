@@ -10,7 +10,7 @@
         <li><h2>イベント開催者 </h2><p>{{ event.host }}</p></li>
         <li><h2>イベント詳細 </h2><p>{{ event.detail }}</p></li>
         <li><h2>関連サイト</h2><a href={{ event.url }} target="_blank" rel="noopener noreferrer"><p>{{ event.url }}</p></a></li>
-        {% if otherslist.0 != "" %}
+        {% if otherslist %}
         <li>
             <h4>その他の情報</h4>
             {% for other in otherslist %}
@@ -24,6 +24,11 @@
             {% endfor %}
         </li>
         {% endif %}
+        <ul style="list-style:none">
+        {% for tag in event.tags %}
+            <li>{{ tag }}</li>
+        {% endfor %}
+        </ul>
         <li><h2>料金表</h2></li>
         <!-- 3/14~3/15にかけて作る予定です -->
         <table>
@@ -48,7 +53,7 @@
 
 {% if event.xyzFlag == 1 %}
 <!--マップ-->
-<div id="view_map" style="height: 350px;width:350px"></div>
+<div id="view_map" style="height: 350px;width:350px;z-index: 0"></div>
 {% endif %}
 
 {% if name == 'event' %}
@@ -66,6 +71,12 @@
     </li>
     {% endfor %}
 </ul>
+{% endif %}
+{% if event.hostFlag == 1 %}
+{% if name == 'host' %}
+    <button type=“button” onclick="location.href='/editMyEvent?id={{event.id}}'">編集</button>
+{% endif %}
+{% endif %}
 <script type="text/javascript">
     const places = JSON.parse('{{ place_json|safe }}');
     //緯度,経度,ズーム
@@ -84,5 +95,5 @@
             .openOn(map);
     });
 </script>
-{% endif %}
+
 {% endblock %}

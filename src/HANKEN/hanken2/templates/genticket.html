@@ -1,5 +1,6 @@
 {% extends "header.html" %} {% block contents %}
-
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'genticket.css' %}">
 <p class="begin">
     チケット発行
 </p>
@@ -28,7 +29,8 @@
                 イベント詳細
             </th>
             <td>
-                <input type="text" name="detail" value="" required/>
+                <!--<input type="text" name="detail" value="" required/>-->
+                <textarea type="text" name="detail" maxlength="2000" placeholder="詳細"  required></textarea>
             </td>
         </tr>
         <tr>
@@ -156,6 +158,14 @@
             </td>
 
         </tr>
+        <tr>
+            <th>
+                イベントタグ(任意)<br>「, 」区切りでご入力ください
+            </th>
+            <td>
+                <input type="text" name="tags" value="" placeholder="映画, アニメ" />
+            </td>
+        </tr>
     </table>
     <br>
     <br>
@@ -182,6 +192,9 @@
         <input type="button" value="項目追加" class="list_add">
     </div>
     <!-- <button type="submit" class="btn btn-success">登録</button> -->
+
+
+
     <input type="submit" value="登録" />
 
 

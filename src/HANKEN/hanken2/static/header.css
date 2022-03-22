@@ -1,7 +1,13 @@
+body{
+    position: relative;
+    background: #FFFFFF;
+}
+
 header{
     z-index: 10;
     height: 84px;
     position: absolute;
+    top: 0;
     background-color: #ffffff;
     width: 100%;
     z-index: 2;
@@ -45,8 +51,9 @@ header ul li a{
 header.left{
     margin-right: auto;
 }
-.begin{
-    padding-top: 100px;
+
+.main{
+    padding-top: 84px;
 }
 
 footer{

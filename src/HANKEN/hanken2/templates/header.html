@@ -15,6 +15,8 @@
 
         <link rel="stylesheet" href="{% static 'header.css' %}">
         <link rel="stylesheet" href="{% static 'font.css' %}">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
         <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
         <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
@@ -49,6 +51,7 @@
                 {% else %}
                     <li class="rights"><a href="/homehost">Home</a></li>
                 {% endif %}
+                <li class="right"><a href="/lp"> Organizer</a></li>
                 {% if user == "" %}
                     <li class="right"><a href="/login">Login</a></li>
                 {% else %}
@@ -59,7 +62,7 @@
                     {% endif %}
                     <li class="right"><a href="/logout">Logout</a></li>
                     <li class="right"><a href="/myevent">{{ user }}</a></li>
-                {% endif %}
+                {% endif %}}
             </ul>
         </header>
         <div class="main">
@@ -71,8 +74,9 @@
         <footer>
             <ul>
                 <li>
-                    <a href="/terms"><p>利用規約</p></a>
-                    <a href="/privacy"><p>プライバシーポリシー</p></a>
+                    <a href="/terms" target="_blank" rel="noopener noreferrer"><p>利用規約</p></a>
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer"><p>プライバシーポリシー</p></a>
+                    <a href="/contactUs" target="_blank" rel="noopener noreferrer"><p>お問い合わせ</p></a>
                 </li>
                 <li>
                     <p>入場確認専用アプリ</p>

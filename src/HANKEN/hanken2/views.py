@@ -1345,7 +1345,7 @@ def pay_m(request):
         chargeid = Ww_charges_ww.objects.get(pk=request.GET['id']).c_charge_id_id
         chargeAmount = C_charges.objects.get(pk=chargeid).c_charge
         if chargeAmount > 0:
-            payjp.api_key = "###############"
+            payjp.api_key = "##########"
             charge = payjp.Charge.create(
                 amount=chargeAmount,
                 card=request.POST['id'],

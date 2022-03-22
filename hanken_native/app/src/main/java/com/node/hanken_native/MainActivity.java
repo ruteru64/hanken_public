@@ -2,8 +2,10 @@ package com.node.hanken_native;
 
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Color;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
+import android.text.TextPaint;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -32,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private String TAG = "MainActivity";
     TextView txt01;
     EditText event;
+    EditText pass;
+    EditText nfc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
 
         txt01 = findViewById(R.id.txt01);
         event = findViewById(R.id.event);
+        pass = findViewById(R.id.pass);
+        nfc = findViewById(R.id.nfc);
     }
 
     @Override
@@ -79,7 +85,8 @@ public class MainActivity extends AppCompatActivity {
             tempS = tempS.length()==1?"0"+tempS:tempS;
             out += tempS;
         }
-        if (event.getText().toString() == ""){
+        if (event.getText().toString() == "" || pass.getText().toString() == ""){
+            nfc.setText(out);
             return;
         }
         try{
@@ -90,12 +97,13 @@ public class MainActivity extends AppCompatActivity {
         //httpリクエスト
         try{
             //okhttpを利用するカスタム関数（下記）
-            httpRequest("https://hanken.link/hostnfcget-a"+"?id="+event.getText()+"&nfc="+out);
+            httpRequest("https://hanken.link/hostnfcget-a"+"?id="+event.getText()+"&nfc="+out+"&pass="+pass.getText());
         }catch(Exception e){
             Log.e("Hoge",e.getMessage());
         }
         // 表示
         Toast.makeText(this,out, Toast.LENGTH_SHORT).show();
+        nfc.setText(out);
     }
 
     void httpRequest(String url) throws IOException{
@@ -148,6 +156,13 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     txt01.setText(status);
+                                    if (status == "入場可能"){
+                                        txt01.setTextColor(Color.BLACK);
+                                    }else if (status == "再入場"){
+                                        txt01.setTextColor(Color.GREEN);
+                                    }else{
+                                        txt01.setTextColor(Color.RED);
+                                    }
                                 }
                             });
 

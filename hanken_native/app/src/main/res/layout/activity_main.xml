@@ -11,6 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="NFCをタッチしてください"
+        android:textColor="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -32,5 +33,53 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/pass"
+        android:layout_width="272dp"
+        android:layout_height="72dp"
+        android:layout_marginStart="101dp"
+        android:layout_marginTop="304dp"
+        android:layout_marginEnd="101dp"
+        android:layout_marginBottom="60dp"
+        android:ems="10"
+        android:hint="passを入力してください"
+        android:inputType="textPersonName"
+        android:minHeight="48dp"
+        app:layout_constraintBottom_toTopOf="@+id/txt01"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.507"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/nfc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="85dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="116dp"
+        android:layout_marginBottom="272dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="NFCid"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="81dp"
+        android:layout_marginTop="95dp"
+        android:layout_marginEnd="193dp"
+        android:layout_marginBottom="5dp"
+        android:text="現在読み取ったNFCid"
+        app:layout_constraintBottom_toTopOf="@+id/nfc"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txt01" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

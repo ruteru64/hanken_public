@@ -1,7 +1,5 @@
 # hanken_public
 
-# 23:00までメンテナンスします
-
 ## 前書き
 
 セキュリティの関係から開発しているリポジトリではないリポジトリで公開いたします。
@@ -25,6 +23,7 @@
 * 動作を早く行えるように調整を行った。
 * タスク管理をしっかりと行った。
 * Pay.jpを利用し決済処理まで行えるようにした。
+* コンプライアンスに注意して開発を行った。
 
 
 ## リンク
@@ -36,6 +35,8 @@ https://hanken.link
 ### AndoridApp
 
 https://play.google.com/store/apps/details?id=com.node.hanken_native
+
+https://github.com/ruteru64/hanken_native
 
 
 ## 使用技術
@@ -49,6 +50,32 @@ https://play.google.com/store/apps/details?id=com.node.hanken_native
 * NFC
 * AWS
 * GNU Make
+
+### 選定理由
+
+#### python
+全員が使える言語であったため
+
+#### Django
+全員触れたことがないが簡単な開発を行えるため
+
+#### React
+DOMに関して管理ができないため一意な気泡として導入。CDN
+
+#### JAVA
+android開発をするときにNativな機能を使用したかったためKotlin or JAVAとなったが、JAVAの気泡もままならないままKotlinに挑戦するのが時間的に難しかった
+
+#### android,nfc
+サービスのユーザー体験を上げるため
+
+#### SQLite
+メンバーが全員問題なく使用できるため
+
+#### AWS
+公開時にある程度自由にサーバーを構築できるため。あと無料枠
+
+####　GNU Make
+実行コードが長くなったのでできる限り人的なミスを少なくするため
 
 
 ## ファイル構成

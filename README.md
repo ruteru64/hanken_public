@@ -1,6 +1,7 @@
 # hanken_public
 
 ![log](https://github.com/ruteru64/hanken_public/blob/main/img/logo_large.png)
+©2022 HANKEN all rights reserved
 
 ## 前書き
 

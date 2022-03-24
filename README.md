@@ -1,6 +1,6 @@
 # hanken_public
 
-![logp](/img/log_large.png)
+![log](img/log_large.png)
 
 ## 前書き
 

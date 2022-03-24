@@ -1,6 +1,6 @@
 # hanken_public
 
-![log](hanken_public/img/logo_large.png)
+![log](https://github.com/ruteru64/hanken_public/blob/main/img/logo_large.png)
 
 ## 前書き
 

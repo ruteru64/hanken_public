@@ -67,7 +67,7 @@ https://github.com/ruteru64/hanken_native
 DOMに関して管理ができないため一意な気泡として導入。CDN
 
 #### JAVA
-android開発をするときにNativな機能を使用したかったためKotlin or JAVAとなったが、JAVAの気泡もままならないままKotlinに挑戦するのが時間的に難しかった
+android開発をするときにNativな機能を使用したかったためKotlin or JAVAとなったが、JAVAの記法もままならないままKotlinに挑戦するのが時間的に難しかった
 
 #### android,nfc
 サービスのユーザー体験を上げるため

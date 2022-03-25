@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('kakakasnaiobahbagbouawobhjduebuiyabutevbovlshousb/', admin.site.urls),
+    path('#################', admin.site.urls),
     path('', include('hanken2.urls')),
     path('login', include('hanken2.urls')),
     path('login-m', include('hanken2.urls')),

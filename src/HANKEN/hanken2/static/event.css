@@ -1,22 +1,87 @@
-ul.event{
-    list-style: none;
-    width: 50%;
-}
-ul.contemts{
-    list-style: none;
-    width: 50%;
+.wrapper{
+    padding: 60px 9% 80px;
+    background-color: #FFECAF;
 }
 
-a{
-    text-decoration: none;
+h1{
+    font-family: "Sen";
+    font-size: 80px;
+    text-align: center;
+    color: #FFFFFF;
+    letter-spacing: 0.48px;
+    margin-bottom: 145px;
+}
+
+.event_container{
+    background-color: #FFFFFF;
+    padding: 40px 7%;
+    position: relative;
+}
+.eachEvent{
+    justify-content: space-between;
+    position: relative;
+    margin: 0 30px 80px;
+}
+
+.eachEvent img{
+    width: 100%;
+}
+
+ul.contemts{
+    width: 110%;
+    padding: 20px 10px;
+    list-style: none;
+    border: solid 1px #000000;
+    background: #D2FFEA;
+    border-radius: 20px;
+    display: flex;
+    position: absolute;
+    content: "";
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, 50px);
 }
 
 ul.contemts li{
     color: #000000;
-    padding: 20px;
+    border-left: 1px solid #000000;
+    padding: 0 10px;
+}
+ul.contemts li:first-child{
+    border: none;
 }
 
 ul.contents{
     list-style: none;
     border: solid 1px #000000;
+}
+ul.event{
+    list-style: none;
+}
+ul.event li{
+    font-size: 24px;
+}
+
+.host{
+    width: 520px;
+    padding: 20px 30px;
+    list-style: none;
+    border: solid 1px #000000;
+    background: #D2FFEA;
+    border-radius: 20px;
+    display: flex;
+    margin-bottom: 40px;
+}
+
+.host img{
+    margin-right: 30px;
+}
+
+.host li{
+    border-left: 2px solid #000000;
+    padding-left: 40px;
+}
+
+a{
+    text-decoration: none;
 }

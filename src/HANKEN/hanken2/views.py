@@ -628,10 +628,14 @@ def getTicketlist(id):
 
 
 def event(request):
+    id = ''
     if 'id' in request.GET:
-        event, placeDic = getEvent(request.GET['id'])
-        ticketlist, th_list, sc_list = getTicketlist(request.GET['id'])
-        othersList = O_others.objects.filter(e_event_id_id = request.GET['id']).values("o_name", "o_detail")
+        id = request.GET['id']
+        event, placeDic = getEvent(id)
+
+        ticketlist, th_list, sc_list = getTicketlist(id)
+
+        othersList = O_others.objects.filter(e_event_id_id = id).values("o_name", "o_detail")
     else:
         try:
             id = request.session['eventid']
@@ -642,7 +646,13 @@ def event(request):
         except:
             return redirect('/')
     try:
+        usermail = request.session['member_id']
+        userid = U_users.objects.get(u_mail_address=usermail).u_user_id
+        event['buyflag'] = 0
+        if T_tickets.objects.filter(u_user_id_id = userid, e_event_id_id = id).exists():
+            event['buyflag'] = 1
         return render(request, 'event.html', {"user":request.session['member_id'],"name":"event","event":event,"ticketlist":ticketlist, "otherslist":othersList, "thlist":th_list, "sclist":sc_list, 'place_json': json.dumps(placeDic)})
+
     except:
         event["hostFlag"] = 0
         try:
@@ -1059,12 +1069,18 @@ def hostnfcget_a(request):
     """hostnfcget_gと同じ"""
      # 入力されたNFCをGET
     nfcid = request.GET['nfc']
+    prm = {"wasentry":0}
+    if make_hash(request.GET['id']) != request.GET['pass']:
+        prm["wasentry"] = 0
+        prm["isticket"] = 0
+        prm['isnfc'] = 1
+        return JsonResponse(prm,safe=False)
+
 
     # イベントIDをGET
     eventid = str(int(request.GET['id']) - 8635)
     
     # NFCテーブルにNFCがあるか探す
-    prm = {"wasentry":0}
     nfcObj = N_nfcs.objects
     if nfcObj.filter(n_nfcid = nfcid, n_is_deleted = False).exists():
         userid = nfcObj.get(n_nfcid = nfcid).u_user_id_id
@@ -1328,6 +1344,10 @@ def genticket_m(request):
 def pay(request):
     try:
         id = request.session['member_id']
+        userid = U_users.objects.get(u_mail_address=id).u_user_id
+        # 再購入不可
+        if T_tickets.objects.filter(u_user_id_id = userid, e_event_id_id = request.GET['id']).exists():
+            return redirect('/404')
     except:
         return redirect('/')
     return render(request,'pay.html',{"user":id,"name":"pay"})
@@ -1345,7 +1365,7 @@ def pay_m(request):
         chargeid = Ww_charges_ww.objects.get(pk=request.GET['id']).c_charge_id_id
         chargeAmount = C_charges.objects.get(pk=chargeid).c_charge
         if chargeAmount > 0:
-            payjp.api_key = "##########"
+            payjp.api_key = "##################################################"
             charge = payjp.Charge.create(
                 amount=chargeAmount,
                 card=request.POST['id'],

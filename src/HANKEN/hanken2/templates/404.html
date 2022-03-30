@@ -1,3 +1,22 @@
-<h1>このページは利用できません</h1>
-<p>アクセスできないURLか、ページが削除されています。</p>
-<p><a href="/">トップページに戻る</a></p>
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>お探しのページは見つかりません</title>
+  <script src="{% static 'js/404.js' %}"></script>
+  <!-- <script src="{% static 'js/pyonpyon.js' %}"></script> -->
+  <link rel="stylesheet" href="{% static 'css/404.css' %}">
+</head>
+<body>
+    <canvas id="my_canvas"></canvas>
+    <section id="body">
+        <p class="font"><span class="item_text">404</span></p>
+        <label class="center">
+            <p>アクセスできないURLか</p>
+            <p>ページが削除されています。</p>
+            <p><a href="/">トップページに戻る</a></p>
+        </label>
+    </section>
+</body>
+</html>

@@ -1,13 +1,9 @@
 from email.policy import default
 import json
-from urllib import request
 from django.shortcuts import render
 from django.shortcuts import redirect
 from django.http.response import JsonResponse
-from numpy import product
-import requests
 import csv
-from django.http import HttpResponse
 import io
 
 from .models import A_addresses, E_events, N_nfcs, T_tickets, U_users, P_places, O_others, Cc_chargeclasses, Yy_eventtags, Ww_charges_ww, Sc_seatclasses, Zz_events_connect_tags_zz, C_charges, M_maxes, Oo_ticket_connect_charge_oo, Ti_ticketsinfos, S_seats, L_lostPasswords
@@ -15,9 +11,6 @@ from .models import A_addresses, E_events, N_nfcs, T_tickets, U_users, P_places,
 from .models import En_enries as En_entries
 
 import datetime
-from django.utils import timezone
-
-from django.db.models import Q
 
 import hashlib
 
@@ -28,11 +21,12 @@ import random, string
 import smtplib
 import ssl
 from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 # パスワード隠してみた
 import os
 from dotenv import load_dotenv
+
+from .payment import payment
 
 
 # メール関係
@@ -78,12 +72,13 @@ def popevent():
     # print(eventids)
     eventids = T_tickets.objects.values("e_event_id_id")
 
+    # チケットの販売数を記録
     eventid_dic = {}
     for eventid in eventids:
         
         if eventid['e_event_id_id'] in eventid_dic.keys():
             eventid_dic[eventid['e_event_id_id']] += 1
-        else:
+        elif E_events.objects.filter(pk=eventid['e_event_id_id'], e_advertisement_flag=True).exists():
             eventid_dic[eventid['e_event_id_id']] = 0
     
     eventid_dic2 = sorted(eventid_dic.items(), key=lambda x:x[1], reverse=True)
@@ -739,16 +734,11 @@ def register_m(request):
 
             # 登録完了メールを送り付ける
             eventlist = popevent()
-            title = f'【ご登録確認】HANKENへのお申し込みありがとうございます'
-
-            text= f'''
-	
-{ name }さん、こんにちは。
-HANKEN運営事務局です。
-
-この度はご登録いただきましてありがとうございます。
-
----------------
+            
+            if len(eventlist) < 3:
+                popeventtext = ""
+            else:
+                popeventtext = """
 人気のイベント
 
 ▼【{ eventlist[0]["place"] }】{ eventlist[0]["name"] }
@@ -760,7 +750,19 @@ http://127.0.0.1:8000/event?id={eventlist[1]["id"]}
 ▼【{ eventlist[2]["place"] }】{ eventlist[2]["name"] }
 http://127.0.0.1:8000/event?id={eventlist[2]["id"]}
 
+---------------"""
+
+            title = f'【ご登録確認】HANKENへのお申し込みありがとうございます'
+
+            text= f'''
+	
+{ name }さん、こんにちは。
+HANKEN運営事務局です。
+
+この度はご登録いただきましてありがとうございます。
+
 ---------------
+{ popeventtext }
 ※本メールはHANKENにてお問い合わせをされた方に自動送信しています。
 　お心当たりのない場合は、お手数ですが当メールを破棄してください。
 ---------------
@@ -1246,6 +1248,14 @@ def genticket_m(request):
         P_places.objects.create(e_event_id_id = eventid, p_prefecture = prefecture, p_city = city, p_build = institution, p_url = url, p_ido = ido, p_kedo = kedo)
         # eventid = E_events.objects.latest("e_created_onat").e_event_id
         # print("イベントID", eventid, type(eventid))
+        try:
+            if request.POST['kokoku'] == 'plz':
+                eventobj2 = E_events.objects.get(pk=eventid)
+                eventobj2.e_advertisement_flag = True
+                eventobj2.save()
+
+        except:
+            pass
 
         # イベントtag
         if tags != "":
@@ -1352,8 +1362,6 @@ def pay(request):
         return redirect('/')
     return render(request,'pay.html',{"user":id,"name":"pay"})
 
-import payjp
-
 def pay_m(request):
     ## 
      # TODO:18
@@ -1365,12 +1373,8 @@ def pay_m(request):
         chargeid = Ww_charges_ww.objects.get(pk=request.GET['id']).c_charge_id_id
         chargeAmount = C_charges.objects.get(pk=chargeid).c_charge
         if chargeAmount > 0:
-            payjp.api_key = "##################################################"
-            charge = payjp.Charge.create(
-                amount=chargeAmount,
-                card=request.POST['id'],
-                currency='jpy',
-            )
+            pay = payment()
+            charge =  pay.sendpay(chargeAmount,request.POST['id'])
             if 'status' in charge:
                 prm = {"err": charge['message']}
             else:

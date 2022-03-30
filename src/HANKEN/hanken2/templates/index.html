@@ -4,6 +4,12 @@
 {% block contents %}
 
 <link rel="stylesheet" href="{% static 'index.css' %}">
+<div class="overlay">
+    <div class="btn_area">
+    <iframe width="100%" height="100%"  src="https://www.youtube-nocookie.com/embed/xHtXZEfri_U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    <button>閉じる</button>
+    </div>
+</div>
 <h1>HANKEN</h1>
 <img class="top_img" src="{% static 'top_img.png' %}" alt="">
 <div class="wrapper">
@@ -41,7 +47,7 @@
                 const event = this.state.contents.map((number) =>
                     <li>
                         <a href={ '/event?id='+number.id }>
-                        <ul class="contemts">
+                        <ul class="contents">
                             <li>イベント名:{ number.name }</li>
                             <li>開催日　  :{ number.date }</li>
                             <li>開催場所　:{ number.place }</li>
@@ -50,7 +56,7 @@
                     </li>
                 );
                 return (
-                    <div class="begin">
+                    <div>
                         <div class="search_container">
                             <input type="text" value={this.state.search} onChange={this.handleChange} />
                             <button onClick={this.handleSearch}></button>
@@ -76,16 +82,31 @@
                 document.getElementById('search')
         );
     </script>
-    おすすめのイベント
-    {% for event in poplist %}
-    <a href="/event?id={{ event.id }}">
-    <ul class="contemts">
-        <li>イベント名:{{ event.name }}</li>
-        <li>開催日　  :{{ event.date }}</li>
-        <li>開催場所　:{{ event.place }}</li>
-    </ul>
-    {% endfor %}
+    <h3 class="eventIntro">おすすめのイベント</h3>
+    <div class="events">
+        {% for event in poplist %}
+        <div class="eachEvent">
+            <a href="/event?id={{ event.id }}">
+            <img src="https://media.discordapp.net/attachments/946347637135769610/956417603117654076/event1.png" alt="イベント画像">
+            <p class="credit">"Illustration by Freepik Storyset"</p>
+            <ul class="contemts">
+                <li>開催日 :　{{ event.date }}</li>
+                <li>イベント名 :　{{ event.name }}</li>
+                <li>開催場所 :　{{ event.place }}</li>
+            </ul>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
 </div>
-
-
+<script type="text/javascript">
+    $(function(){
+    $(".overlay").show();
+    $.cookie('btnFlg') == 'on'?$(".overlay").hide():$(".overlay").show();
+    $(".btn_area button").click(function(){
+    $(".overlay").fadeOut();
+    $.cookie('btnFlg', 'on', { expires: 30,path: '/' }); //cookieの保存
+    });
+    });
+</script>
 {% endblock %}

@@ -11,8 +11,23 @@ from django.db import models
 ### db_column='main_id'
 ### on_delete=models.CASCADE
 
+"""仮パスワードテーブル"""
+class L_lostPasswords(models.Model):
 
-""""NFCテーブル"""
+    # メールアドレス
+    l_mail = models.EmailField(primary_key=True)
+
+    # 仮パスワード
+    l_password = models.TextField()
+
+    # 論理削除フラグ
+    l_is_deleted = models.BooleanField(default=False)
+
+    class Meta:
+
+        verbose_name_plural = '仮パスワード'
+
+"""NFCテーブル"""
 class N_nfcs(models.Model):
 
     # NFCローカルID
@@ -227,6 +242,9 @@ class E_events(models.Model):
 
     # 終了日
     e_end = models.DateTimeField(default="1111-11-11 00:00", blank=True)
+
+    # 広告有無
+    e_advertisement_flag = models.BooleanField(default=False)
 
     # 開催地ID
     # p_place_id = models.ForeignKey('P_places', db_column='p_place_id', on_delete=models.CASCADE)

@@ -2,31 +2,32 @@
 {% load static %}
 
 {% block contents %}
+<div style="text-align: center;">
 <img src="{% static 'title.png' %}" style="width: auto;height: 600px;">
 
 <!--各章へのスクロールリンク-->
 
 <p></p>
-<ul style="list-style: none;display: flex;">
-    <li>
+<ul style="list-style: none;display: flex;margin-left: 35%;">
+    <li style="float: left;">
         <ul style="list-style: none;">
             <li><a href="#nfc"><img src="{% static 'nfcic.png' %}" style="width: 60px;height: auto;"></a></li>
             <li>nfcについて</li>
         </ul>
     </li>
-    <li>
+    <li style="float: left;">
         <ul style="list-style: none;">
             <li><a href="#advertisement"><img src="{% static 'ad.png' %}" style="width: 60px;height: auto;"></a></li>
             <li>広告について</li>
         </ul>
     </li>
-    <li>
+    <li style="float: left;">
         <ul style="list-style: none;">
             <li><a href="#mail"><img src="{% static 'mail.png' %}" style="width: 60px;height: auto;"></a></li>
             <li>メールについて</li>
         </ul>
     </li>
-    <li>
+    <li style="float: left;">
         <ul style="list-style: none;">
             <li><a href="#payment"><img src="{% static 'payment.png' %}" style="width: 60px;height: auto;"></a></li>
             <li>決済について</li>
@@ -38,21 +39,22 @@
 <h2>ご利用の流れ</h2>
 <img src="{% static 'Line.png' %}">
 <h2>NFC</h2>
-<h3>技術説明</h3>
-<p>suicaやIDなどの電子決済カードの総称</p>
-<h3>システム概要</h3>
+<img src="{% static 'nfc.png' %}" style="width: auto;height: 400px;">
 <p>
 NFCを入場チケットの代わりにし、身分確認をNFCを持っていることで代理とする。
 </p>
 <a name="advertisement"></a>
-<h3>メリット</h3>
 <p>
 チケット転売や入場管理に割くコストを会場運営に割くことができイベントの質や顧客体験を上げることができる。
 </p>
+<p>
+同様システムでQRコードで入場の代わりとするものもあるが、NFCを利用することで1人あたりの入場時間を平均7秒短縮
+</p>
 <a name="mail"></a>
 <h2>広告</h2>
+<img src="{% static 'ads.png' %}" style="width: auto;height: 400px;">
 <p>
-    ホームの人気のイベント5選の上に広告を表示させる機能を検討中。これによりイベント参加者へのアプローチを測ることができる。
+    ホームの人気のイベント5選の上に広告を表示させる機能を検討中。これによりイベント参加者へのアプローチを量ることができます。
 </p>
 <a name="payment"></a>
 <h2>メールでのダイレクト</h2>
@@ -64,7 +66,10 @@ NFCを入場チケットの代わりにし、身分確認をNFCを持ってい�
 
 <h2>無料のイベントももちろんOK</h2>
 <p>
-    たとえ無料のイベントであっても問題なく掲載することができます！
+たとえ無料のイベントであっても問題なく開催することができます！
 </p>
-
+<p>
+また、イベント開催のために特別使用するものはNFCを読み取るの事のできるスマートフォンだけです
+</p>
+</div>
 {% endblock %}

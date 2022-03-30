@@ -2,81 +2,124 @@
 {% load static %}
 {% block contents %}
 <link rel="stylesheet" href="{% static 'event.css' %}">
-<p class="begin">
-    <ul class="event">
-        <li><h2>イベント名</h2><p>{{ event.name }}</p></li>
-        <li><h2>イベント開催地</h2><p>{{ event.state }}</p></li>
-        <li><h2>イベント開催日 </h2><p>{{ event.date }}</p></li>
-        <li><h2>イベント開催者 </h2><p>{{ event.host }}</p></li>
-        <li><h2>イベント詳細 </h2><p>{{ event.detail }}</p></li>
-        <li><h2>関連サイト</h2><a href={{ event.url }} target="_blank" rel="noopener noreferrer"><p>{{ event.url }}</p></a></li>
-        {% if otherslist %}
-        <li>
-            <h4>その他の情報</h4>
-            {% for other in otherslist %}
-                {% if other.o_name != "" %}
-                <table>
-                    <tr>
-                        <th>{{ other.o_name }}</th><td>{{ other.o_detail }}</td>
-                    </tr>
-                </table>
-                {% endif %}
-            {% endfor %}
-        </li>
-        {% endif %}
-        <ul style="list-style:none">
-        {% for tag in event.tags %}
-            <li>{{ tag }}</li>
-        {% endfor %}
-        </ul>
-        <li><h2>料金表</h2></li>
-        <!-- 3/14~3/15にかけて作る予定です -->
-        <table>
-            <tr>
-                <th>&nbsp;</th>
-                {% for th in thlist %}
-                    <th>{{ th }}</th>
-                {% endfor %}
-            </tr>
-            {% for sc in sclist %}
-            <tr>
-                <th>{{ sc.s_name }}</th>
-                {% for charge in sc.cc %}
-                    <td>{{ charge.plice }}</td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </table>
-
-    </ul>
-</p>
-
-{% if event.xyzFlag == 1 %}
-<!--マップ-->
-<div id="view_map" style="height: 350px;width:350px;z-index: 0"></div>
-{% endif %}
-
-{% if name == 'event' %}
-<ul class="contemts">
-    {% for ticket in ticketlist %}
-    <li>
-        <a href="/pay?id={{ ticket.id }}">
-            <ul class="contents">
-                <li>種別:{{ ticket.name }}</li>
-                <li>対象年齢:{{ ticket.people }}</li>
-                <li>価格:{{ ticket.plice }} </li>
-                <li>状態:{{ ticket.status }} </li>
+<div class="wrapper">
+    <h1>event</h1>
+    <div class="event_container">
+        <div class="eachEvent">
+            <img src="https://media.discordapp.net/attachments/946347637135769610/956417603117654076/event1.png" alt="イベント画像">
+            <p class="credit">"Illustration by Freepik Storyset"</p>
+            <ul class="contemts">
+                <li>イベント開催日 :　<strong>{{ event.date }}</strong></li>
+                <li>イベント名 :　<strong>{{ event.name }}</strong></li>
+                <li>イベント開催地 :　<strong>{{ event.state }}</strong></li>
             </ul>
-        </a>
-    </li>
-    {% endfor %}
-</ul>
-{% endif %}
-{% if event.hostFlag == 1 %}
-{% if name == 'host' %}
-    <button type=“button” onclick="location.href='/editMyEvent?id={{event.id}}'">編集</button>
-{% endif %}
-{% endif %}
+        </div>
+        <ul class="event">
+            <div class="host">
+                <img src="https://cdn.discordapp.com/attachments/946347637135769610/956741798762516500/carbon_user-avatar.png" alt="ユーザーのプロフィール画像" width="60px" height="60px">
+                <li><p>イベント開催者</p><strong>{{ event.host }}</strong></li>
+            </div>
+            <li>
+                <h2 class="text-center">About</h2>
+                <div class="event_contents">
+                    <p>{{ event.detail|linebreaksbr }}</p>
+                </div>
+            </li>
+            <li>
+                <h2 class="text-left">Reference</h2>
+                <div class="event_contents">
+                    <a href={{ event.url }} target="_blank" rel="noopener noreferrer"><p>{{ event.url }}</p></a>
+                </div>
+            </li>
+            {% if otherslist %}
+            <li>
+                <h2 class="text-left">Other information</h2>
+                <div class="event_contents">
+                    <table>
+                    {% for other in otherslist %}
+                        
+                        {% if other.o_name != "" %}
+                            <tr>
+                                <th>{{ other.o_name }}:</th>
+                                <td>{{ other.o_detail }}</td>
+                            </tr>
+                            <!-- 余力あればハッシュタグを入れる -->
+                        {% endif %}
+                        
+                    {% endfor %}
+                    </table>
+                </div>
+            </li>
+            {% endif %}
+            <ul style="list-style:none">
+            {% for tag in event.tags %}
+                <li style="float:left; padding-left: 10px;background: #76ddeb;border-radius: 40px;">{{ tag }}</li>
+            {% endfor %}
+            </ul>
+            <li style="clear: both;">
+                <h2 class="text-center">Fees</h2>
+                <div class="fees">
+                    <div class="fees_detail">
+                        <h3 class="text-center">料金について</h3>
+                        <div class="event_contents" style="background: #FFDEEC;">
+                            <p>・特別料金の説明や料金の詳細についての説明</p>
+                            <p>・キャンペーンの説明</p>
+                            <p>・購入特典などの説明</p>
+                            <br>
+                            <p>上記の説明を行うところです。</p>
+                        </div>
+                    </div>
+                    <table>
+                        <tr>
+                            <th>&nbsp;</th>
+                            {% for th in thlist %}
+                                <th class="person_class">{{ th }}</th>
+                            {% endfor %}
+                        </tr>
+                        {% for sc in sclist %}
+                        <tr>
+                            <th>{{ sc.s_name }}</th>
+                            {% for charge in sc.cc %}
+                                <td>{{ charge.plice }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </li>
+
+        </ul>
+        {% if event.xyzFlag == 1 %}
+        <!--マップ-->
+        <h2 class="text-center">Map</h2>
+        <div id="view_map" style="height: 600px; width: 600px; z-index: 0; margin: 0 auto; "></div>
+        {% endif %}
+        {% if event.buyflag != 1 %}
+        {% if name == 'event' %}
+        <ul class="event">
+            {% for ticket in ticketlist %}
+            <li>
+                <a href="/pay?id={{ ticket.id }}">
+                    <ul class="contents">
+                        <li>種別:{{ ticket.name }}</li>
+                        <li>対象年齢:{{ ticket.people }}</li>
+                        <li>価格:{{ ticket.plice }} </li>
+                        <li>状態:{{ ticket.status }} </li>
+                    </ul>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endif %}
+        {% if event.hostFlag == 1 %}
+        {% if name == 'host' %}
+            <button type=“button” onclick="location.href='/editMyEvent?id={{event.id}}'">編集</button>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
 <script type="text/javascript">
     const places = JSON.parse('{{ place_json|safe }}');
     //緯度,経度,ズーム

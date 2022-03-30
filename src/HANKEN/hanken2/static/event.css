@@ -27,6 +27,17 @@ h1{
     width: 100%;
 }
 
+.credit{
+    color: #000000;
+    font-weight: bold;
+    background: #fff;
+    position: absolute;
+    content: '';
+    right: 20px;
+    bottom: 30px;
+    border-radius: 10px;
+}
+
 ul.contemts{
     width: 110%;
     padding: 20px 10px;
@@ -57,9 +68,11 @@ ul.contents{
 }
 ul.event{
     list-style: none;
+    padding-left: 0;
 }
 ul.event li{
     font-size: 24px;
+    margin-bottom: 45px;
 }
 
 .host{
@@ -70,7 +83,7 @@ ul.event li{
     background: #D2FFEA;
     border-radius: 20px;
     display: flex;
-    margin-bottom: 40px;
+    margin-bottom: 75px;
 }
 
 .host img{
@@ -78,10 +91,69 @@ ul.event li{
 }
 
 .host li{
+    width: 100%;
     border-left: 2px solid #000000;
     padding-left: 40px;
+    text-align: center;
+}
+.event li p{
+    font-size: 16px;
+    text-align: left;
+    margin-bottom: 0;
 }
 
 a{
     text-decoration: none;
+}
+
+h2{
+    font-family: "Sen";
+    font-size: 40px;
+    letter-spacing: 0.48px;
+    margin-bottom: 30px;
+}
+
+.event_contents{
+    padding: 30px 40px;
+    border: 1px solid #000000;
+    border-radius: 30px;
+}
+.event_contents td{
+    padding-left: 20px;
+}
+
+.fees{
+    display: flex;
+    margin-bottom: 150px;
+}
+
+.fees_detail{
+    width: 40%;
+}
+
+.fees table{
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 55%;
+    margin-left: auto;
+}
+.fees table tr{
+    border-bottom: solid 1px #13BED0;
+}
+.fees table tr:last-child{
+    border-bottom: none;
+}
+.fees table th,.fees table td{
+    border-right: solid 1px #13BED0;
+}
+.fees table th:last-child,.fees table td:last-child{
+    border-right: none;
+}
+.fees table th,.fees table td{
+    text-align: center;
+    padding: 15px 0;
+}
+.fees table th{
+    background: #FFF0C2;
+    border-radius: 40px;
 }

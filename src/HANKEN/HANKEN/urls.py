@@ -15,9 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 urlpatterns = [
-    path('#################', admin.site.urls),
+    path(os.environ['ADMIN_ADRESS'], admin.site.urls),
     path('', include('hanken2.urls')),
     path('login', include('hanken2.urls')),
     path('login-m', include('hanken2.urls')),

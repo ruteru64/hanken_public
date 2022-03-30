@@ -3,6 +3,8 @@
 ![log](https://github.com/ruteru64/hanken_public/blob/main/img/logo_large.png)
 ©2022 HANKEN all rights reserved
 
+https://www.youtube.com/watch?v=xHtXZEfri_U
+
 ## 前書き
 
 セキュリティの関係から開発しているリポジトリではないリポジトリで公開いたします。
